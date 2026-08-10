@@ -101,13 +101,6 @@ test_that("duplicate SNP positions are rejected", {
   expect_error(css_input(d, tests = tests3), "duplicated")
 })
 
-test_that("chromosomes sort numerically, not alphabetically", {
-  d <- data.frame(chr = c("10", "2", "1", "X"), pos = 1:4 * 1e5,
-                  a = 1:4, b = 4:1, c = c(2, 3, 1, 4))
-  x <- css_input(d, tests = c(a = "high", b = "high", c = "high"))
-  expect_identical(levels(x$chr), c("1", "2", "10", "X"))
-})
-
 test_that("an existing `snp` column is used rather than discarded", {
   d <- make_df(10)
   d$snp <- paste0("rs", seq_len(nrow(d)))
@@ -126,6 +119,7 @@ test_that("chromosome factor levels give genomic, not alphabetical, order", {
   d <- data.frame(chr = c("10", "2", "1", "X"), pos = 1:4 * 1e5,
                   a = 1:4, b = 4:1, c = c(2, 3, 1, 4))
   x <- css_input(d, tests = c(a = "high", b = "high", c = "high"))
+  expect_identical(levels(x$chr), c("1", "2", "10", "X"))
   expect_identical(as.character(x$chr), c("1", "2", "10", "X"))
   # filtering by chromosome still behaves naturally despite the factor
   expect_equal(nrow(x[as.character(chr) == "2"]), 1L)
