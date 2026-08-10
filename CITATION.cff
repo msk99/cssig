@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use cssig, please cite the two papers that describe the method."
+title: "cssig: Composite Selection Signals for Detecting Signatures of Selection"
+type: software
+license: GPL-3.0
+references:
+  - type: article
+    title: "Composite selection signals can localize the trait specific genomic regions in multi-breed populations of cattle and sheep"
+    authors:
+      - family-names: Randhawa
+        given-names: "Imtiaz Ahmed Sajid"
+      - family-names: Khatkar
+        given-names: "Mehar Singh"
+      - family-names: Thomson
+        given-names: "Peter Campbell"
+      - family-names: Raadsma
+        given-names: "Herman William"
+    journal: "BMC Genetics"
+    volume: 15
+    start: 34
+    year: 2014
+    doi: 10.1186/1471-2156-15-34
+  - type: article
+    title: "Composite selection signals for complex traits exemplified through bovine stature using multibreed cohorts of European and African Bos taurus"
+    authors:
+      - family-names: Randhawa
+        given-names: "Imtiaz Ahmed Sajid"
+      - family-names: Khatkar
+        given-names: "Mehar Singh"
+      - family-names: Thomson
+        given-names: "Peter Campbell"
+      - family-names: Raadsma
+        given-names: "Herman William"
+    journal: "G3 Genes|Genomes|Genetics"
+    volume: 5
+    start: 1391
+    end: 1401
+    year: 2015
+    doi: 10.1534/g3.115.017772

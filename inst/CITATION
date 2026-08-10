@@ -1,0 +1,19 @@
+citHeader("To cite cssig, please cite the two papers describing the CSS method:")
+
+bibentry(
+  bibtype = "Article",
+  title   = "Composite selection signals can localize the trait specific genomic regions in multi-breed populations of cattle and sheep",
+  author  = c(person("Imtiaz Ahmed Sajid", "Randhawa"), person("Mehar Singh", "Khatkar"),
+              person("Peter Campbell", "Thomson"), person("Herman William", "Raadsma")),
+  journal = "BMC Genetics", volume = "15", pages = "34", year = "2014",
+  doi     = "10.1186/1471-2156-15-34"
+)
+
+bibentry(
+  bibtype = "Article",
+  title   = "Composite selection signals for complex traits exemplified through bovine stature using multibreed cohorts of European and African Bos taurus",
+  author  = c(person("Imtiaz Ahmed Sajid", "Randhawa"), person("Mehar Singh", "Khatkar"),
+              person("Peter Campbell", "Thomson"), person("Herman William", "Raadsma")),
+  journal = "G3 Genes|Genomes|Genetics", volume = "5", pages = "1391--1401", year = "2015",
+  doi     = "10.1534/g3.115.017772"
+)

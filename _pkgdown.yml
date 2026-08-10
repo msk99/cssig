@@ -1,0 +1,63 @@
+url: https://msk99.github.io/cssig/
+
+template:
+  bootstrap: 5
+
+reference:
+  - title: Input
+    desc: Getting constituent statistics into shape
+    contents:
+      - css_input
+      - css_merge_tests
+      - read_selscan_xpehh
+      - read_rehh_xpehh
+
+  - title: The CSS pipeline
+    desc: Score, smooth, threshold, call regions, estimate FDR
+    contents:
+      - css
+      - css_smooth
+      - css_threshold
+      - css_regions
+      - css_fdr
+      - css_reciprocal
+
+  - title: Constituent statistics
+    desc: Helpers for the constituents computable from allele frequencies
+    contents:
+      - css_fst
+      - css_ddaf
+      - css_dsaf
+      - css_standardize
+
+  - title: Visualisation
+    contents:
+      - css_manhattan
+      - css_manhattan_mirror
+      - css_chrom_plot
+      - css_region_plot
+      - css_qq
+      - css_pdist
+      - css_fdr_density
+      - css_test_cor
+      - css_circos
+      - css_theme
+      - css_genome_coords
+
+  - title: Data
+    contents:
+      - css_sim
+      - css_sim_small
+      - css_sim_truth
+
+  - title: Methods
+    contents:
+      - summary.css_result
+      - summary.css_regions
+
+articles:
+  - title: Articles
+    navbar: ~
+    contents:
+      - cssig
+      - simulation

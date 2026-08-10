@@ -1,0 +1,45 @@
+Package: cssig
+Type: Package
+Title: Composite Selection Signals for Detecting Signatures of Selection
+Version: 1.0.0
+Authors@R: c(
+    person("Mehar Singh", "Khatkar", email = "mehar.khatkar@adelaide.edu.au",
+           role = c("aut", "cre")))
+Description: Implements the composite selection signals (CSS) method of
+    Randhawa et al. (2014) <doi:10.1186/1471-2156-15-34> and Randhawa et al.
+    (2015) <doi:10.1534/g3.115.017772>, which unifies multiple constituent
+    selection tests, such as the fixation index, cross-population extended
+    haplotype homozygosity and the change in derived allele frequency, into a
+    single non-parametric index based on the rank distribution of the
+    constituent tests. Provides the core CSS statistic, sliding-window
+    smoothing, empirical significance thresholds, genomic region calling,
+    false discovery rate estimation, reciprocal (signed) cohort contrasts,
+    helpers for computing the constituent statistics from allele frequencies,
+    and a family of visualisations including Manhattan, mirrored Manhattan,
+    per-chromosome, regional and circular plots.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+LazyDataCompression: xz
+Depends:
+    R (>= 4.1)
+Imports:
+    data.table (>= 1.15.0),
+    ggplot2,
+    stats,
+    utils
+Suggests:
+    circlize,
+    fdrtool,
+    knitr,
+    rehh,
+    rmarkdown,
+    scrm,
+    testthat (>= 3.0.0),
+    tibble,
+    vdiffr
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+URL: https://github.com/msk99/cssig
+BugReports: https://github.com/msk99/cssig/issues
+Config/roxygen2/version: 8.0.0

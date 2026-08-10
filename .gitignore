@@ -1,0 +1,20 @@
+# R session / IDE
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# build and check artefacts
+*.tar.gz
+*.Rcheck/
+inst/doc/
+/docs/
+Rplots.pdf
+
+# Per-chromosome haplotype caches from the simulation (~11 MB, reproducible).
+# Regenerate with: Rscript data-raw/run-all.R
+data-raw/cache/
+
+# OS
+.DS_Store
