@@ -1,0 +1,35 @@
+# cssig: Composite Selection Signals for Detecting Signatures of Selection
+
+Implements the composite selection signals (CSS) method of Randhawa et
+al. (2014)
+[doi:10.1186/1471-2156-15-34](https://doi.org/10.1186/1471-2156-15-34)
+and Randhawa et al. (2015)
+[doi:10.1534/g3.115.017772](https://doi.org/10.1534/g3.115.017772) ,
+which unifies multiple constituent selection tests, such as the fixation
+index, cross-population extended haplotype homozygosity and the change
+in derived allele frequency, into a single non-parametric index based on
+the rank distribution of the constituent tests. Provides the core CSS
+statistic, sliding-window smoothing, empirical significance thresholds,
+genomic region calling, false discovery rate estimation, reciprocal
+(signed) cohort contrasts, helpers for computing the constituent
+statistics from allele frequencies, and a family of visualisations
+including Manhattan, mirrored Manhattan, per-chromosome, regional and
+circular plots.
+
+## See also
+
+Useful links:
+
+- <https://msk99.github.io/cssig/>
+
+- <https://github.com/msk99/cssig>
+
+- Report bugs at <https://github.com/msk99/cssig/issues>
+
+## Author
+
+**Maintainer**: Mehar Singh Khatkar <mehar.khatkar@adelaide.edu.au>
+
+Authors:
+
+- Mehar Singh Khatkar <mehar.khatkar@adelaide.edu.au>

@@ -1,0 +1,563 @@
+# cssig
+
+**Composite selection signals (CSS) for detecting signatures of
+selection.**
+
+An R implementation of the CSS method of Randhawa, Khatkar, Thomson and
+Raadsma.
+
+``` r
+
+# install
+remotes::install_github("msk99/cssig")                    # add build_vignettes = TRUE for vignettes
+
+# run on the bundled example data
+library(cssig)
+data(css_sim_small)
+
+x   <- css_input(css_sim_small, tests = c(fst = "high", xpehh = "high", ddaf = "high"))
+res <- css(x) |> css_smooth() |> css_threshold(top = 0.001)
+reg <- css_regions(res)
+
+summary(reg)
+css_manhattan(res, regions = reg)
+
+# help
+?css
+vignette("cssig")
+```
+
+------------------------------------------------------------------------
+
+## What this package is
+
+Genome scans for selection rely on statistics like *F*_(ST), XP-EHH and
+ΔDAF. Each is sensitive to a different aspect of a selective sweep, and
+none is decisive on its own — run three tests on the same data and you
+typically get three partly overlapping answers.
+
+CSS combines them into a single non-parametric index. Each constituent
+test is ranked genome-wide, the ranks become normal quantiles, and the
+quantiles are averaged at every SNP. A locus where several tests agree
+is amplified; a locus where only one test is extreme is pulled back
+toward the genome-wide average.
+
+**`cssig` takes pre-computed constituent statistics and does everything
+downstream of them**: the CSS statistic, sliding-window smoothing,
+empirical thresholds, region calling, FDR, reciprocal (signed) cohort
+contrasts, and plots.
+
+### The method
+
+For test *i* at SNP *j*, with *m* tests and *n* SNPs:
+
+| Step | Operation         |                                       |
+|------|-------------------|---------------------------------------|
+| 1    | rank genome-wide  | `R[j,i] = rank(T[,i])`                |
+| 2    | fractional rank   | `R'[j,i] = R[j,i] / (n + 1)`          |
+| 3    | normal quantile   | `Z[j,i] = qnorm(R'[j,i])`             |
+| 4    | mean across tests | `Zbar[j] = mean(Z[j,])`               |
+| 5    | p-value           | `p[j] = 1 - pnorm(sqrt(m) * Zbar[j])` |
+| 6    | CSS               | `-log10(p[j])`                        |
+
+### Scope
+
+**In scope** — the CSS statistic and everything after it, plus the
+constituents that are one-liners from allele frequencies
+([`css_fst()`](https://msk99.github.io/cssig/reference/css_fst.md),
+[`css_ddaf()`](https://msk99.github.io/cssig/reference/css_ddaf.md),
+[`css_dsaf()`](https://msk99.github.io/cssig/reference/css_dsaf.md)).
+
+**Out of scope** — VCF/PLINK parsing, phasing, imputation, and XP-EHH
+computation. Use [rehh](https://cran.r-project.org/package=rehh),
+[selscan](https://github.com/szpiech/selscan) or hapbin for haplotype
+statistics and bring the output here;
+[`read_rehh_xpehh()`](https://msk99.github.io/cssig/reference/read_rehh_xpehh.md)
+and
+[`read_selscan_xpehh()`](https://msk99.github.io/cssig/reference/read_selscan_xpehh.md)
+handle the coercion.
+
+------------------------------------------------------------------------
+
+## Installation
+
+Requires **R \>= 4.1**, and `remotes` for the install command at the top
+of this page.
+
+`install_github()` skips vignettes by default, which is why
+[`vignette("cssig")`](https://msk99.github.io/cssig/articles/cssig.md)
+can report “not found” — add `build_vignettes = TRUE` (it needs `knitr`
+and `rmarkdown`). Both vignettes are also readable on GitHub without
+installing:
+[cssig.Rmd](https://msk99.github.io/cssig/vignettes/cssig.Rmd) and
+[simulation.Rmd](https://msk99.github.io/cssig/vignettes/simulation.Rmd).
+
+Or from a local source tree:
+
+``` bash
+git clone https://github.com/msk99/cssig.git
+R CMD INSTALL cssig
+```
+
+Hard dependencies are only `data.table` (\>= 1.15) and `ggplot2`.
+Optional extras, each needed for one feature:
+
+``` r
+
+install.packages(c("fdrtool",  # css_fdr(method = "fdrtool" / "isotonic")
+                   "circlize", # css_circos()
+                   "rehh"))    # computing XP-EHH in the first place
+```
+
+`scrm` and `rehh` are additionally needed only to *regenerate* the
+bundled example data from `data-raw/`; they are never loaded by the
+installed package.
+
+------------------------------------------------------------------------
+
+## Usage
+
+### 1. Prepare the input
+
+You need one row per SNP: a chromosome, a position, and one numeric
+column per constituent test.
+
+``` r
+
+head(css_sim_small[, .(chr, pos, fst, xpehh, ddaf)])
+```
+
+[`css_input()`](https://msk99.github.io/cssig/reference/css_input.md)
+validates it and records, per test, which direction means *more evidence
+of selection*:
+
+``` r
+
+x <- css_input(my_stats,
+               chr = "chr", pos = "pos", snp = "rsid",
+               tests = c(fst = "high", xpehh = "high", ddaf = "high"))
+```
+
+| `direction` | Meaning | Typical use |
+|----|----|----|
+| `"high"` | use as-is | *F*_(ST); XP-EHH with the selected population as target; ΔDAF as selected − reference |
+| `"low"` | negate before ranking | Tajima’s D, π ratios |
+| `"abs"` | use magnitude only | a signed test whose sign you do not trust |
+
+It accepts a `data.frame`, `tibble`, `data.table` or matrix, and returns
+a `data.table` keyed on `(chr, pos)`.
+
+Two details that surprise people:
+
+- **`chr` comes back as a factor**, not character. That is deliberate:
+  as character, a keyed table sorts `1, 10, 2, 22, X`, which would
+  scramble the Manhattan axis and the order of called regions. The
+  factor carries genomic order, so you get `1, 2, 10, 22, X`. Filtering
+  is unaffected — both `chr == "2"` and `chr == 2` work.
+- **A column named `snp` is picked up automatically.** Pass
+  `snp = "rsid"` for a differently named one; with neither, identifiers
+  of the form `"chr:pos"` are generated.
+
+**If your tests come from different tools** — and so cover slightly
+different SNP sets — join them explicitly rather than hoping they line
+up:
+
+``` r
+
+a <- data.frame(chr = 1, pos = c(100, 200, 300), fst   = c(0.10, 0.22, 0.31))
+b <- data.frame(chr = 1, pos = c(200, 300, 400), xpehh = c(1.1, 2.2, 0.4))
+
+css_merge_tests(fst = a, xpehh = b, all = FALSE)   # FALSE = complete cases only
+#> Merged 2 tests on (chr, pos), keeping the intersection: 2 SNPs.
+#>   fst                3 in ->       2 retained (66.7%)
+#>   xpehh              3 in ->       2 retained (66.7%)
+#>       chr   pos   fst xpehh
+#>    <char> <num> <num> <num>
+#> 1:      1   200  0.22   1.1
+#> 2:      1   300  0.31   2.2
+```
+
+Use `all = TRUE` to keep the union instead, leaving `NA` where a test is
+missing. The retention report exists because silent SNP loss at this
+step is the commonest way a scan goes quietly wrong.
+
+### 2. Getting the constituent statistics
+
+From allele counts and frequencies, in-package:
+
+``` r
+
+fst  <- css_fst(count1 = derived_selected, n1 = n_ind_selected,
+                count2 = derived_reference, n2 = n_ind_reference)
+ddaf <- css_ddaf(daf_selected, daf_reference)   # needs ancestral allele
+dsaf <- css_dsaf(freq_selected, freq_reference) # ancestral-free alternative
+```
+
+XP-EHH needs phased haplotypes, so it comes from elsewhere:
+
+``` r
+
+# rehh
+sel <- rehh::scan_hh(hh_selected);  ref <- rehh::scan_hh(hh_reference)
+xp  <- read_rehh_xpehh(rehh::ies2xpehh(sel, ref))
+
+# selscan
+xp  <- read_selscan_xpehh("chr1.xpehh.out", chr = 1)
+```
+
+### 3. Run the pipeline
+
+``` r
+
+res <- css(x)                                          # the CSS statistic
+res <- css_smooth(res, half_width = 5e5, min_snps = 5) # 1 Mb sliding window
+res <- css_threshold(res, top = 0.001)                 # empirical top 0.1%
+```
+
+Useful arguments:
+
+| Function | Argument | Default | Notes |
+|----|----|----|----|
+| [`css()`](https://msk99.github.io/cssig/reference/css.md) | `ties` | `"average"` | passed to [`data.table::frank()`](https://rdrr.io/pkg/data.table/man/frank.html) |
+|  | `na_action` | `"pairwise"` | uses each SNP’s own *m*; `"omit"` for strict complete cases |
+|  | `weights` | `NULL` | equal weights = the published method |
+| [`css_smooth()`](https://msk99.github.io/cssig/reference/css_smooth.md) | `half_width` | `5e5` | half-width in bp, so 1 Mb total |
+|  | `min_snps` | `5` | sparser windows are masked |
+|  | `cols` | `NULL` | also smooth the constituent tests, for comparison plots |
+| [`css_threshold()`](https://msk99.github.io/cssig/reference/css_threshold.md) | `top` | `0.001` | top 0.1%, as in both papers |
+|  | `top2` | `0.01` | the more permissive tier used by `method = "flank"` |
+
+### 4. Call regions
+
+Two published rules, one from each paper:
+
+``` r
+
+css_regions(res, method = "cluster")  # 2014: >= 3 significant SNPs in a window
+css_regions(res, method = "flank")    # 2015: 1 top-0.1% SNP + >= 5 top-1% neighbours
+```
+
+Both return one row per region with the span, peak SNP, and — when the
+constituent tests are still attached — how many SNPs in each test’s
+*own* top fraction fall inside. That last part is how you tell a signal
+supported by several tests from one driven by a single test.
+
+`start_padded` / `end_padded` carry the ±0.5 Mb both papers add for gene
+mining. The padding is never folded into `start` / `end`, so region
+boundaries are not silently inflated.
+
+### 5. FDR
+
+``` r
+
+res <- css_fdr(res, method = "BH")        # default, no extra dependency
+res <- css_fdr(res, method = "fdrtool")   # the route used in the 2014 paper
+```
+
+Run this **before**
+[`css_smooth()`](https://msk99.github.io/cssig/reference/css_smooth.md).
+Smoothing averages −log10(*p*) over neighbouring SNPs, and the result is
+no longer a p-value;
+[`css_fdr()`](https://msk99.github.io/cssig/reference/css_fdr.md)
+refuses smoothed input rather than returning numbers that look like
+q-values but are not. See the caveat in *Things worth knowing* below.
+
+### 6. Reciprocal (signed) analysis
+
+The 2015 paper compares two cohorts in both directions, so a signal’s
+sign says which cohort carries it:
+
+``` r
+
+fwd <- css_input(dat,      tests = c(fst = "high", xpehh = "high", ddaf = "high"))
+rev <- css_input(dat_swapped, tests = c(fst = "high", xpehh = "high", ddaf = "high"))
+recip <- css_reciprocal(fwd, rev, labels = c("large", "small"))
+css_manhattan_mirror(recip)
+```
+
+### 7. Weighting the constituents
+
+Off by default, because equal weights are the published method. Use it
+when you have a stated reason to trust one test less — not by tuning
+until the answer improves:
+
+``` r
+
+res <- css(x, weights = c(fst = 1, xpehh = 1, ddaf = 0.25))
+```
+
+`weights = c(1,1,1)` reproduces the unweighted statistic exactly, and
+[`print()`](https://rdrr.io/r/base/print.html) flags a weighted run.
+Worked example with known truth in
+[`vignette("simulation")`](https://msk99.github.io/cssig/articles/simulation.md).
+
+### 8. Plots
+
+Every plot function returns a `ggplot` object you can modify, except
+[`css_circos()`](https://msk99.github.io/cssig/reference/css_circos.md),
+which draws with `circlize`.
+
+| Function | What it shows |
+|----|----|
+| [`css_manhattan()`](https://msk99.github.io/cssig/reference/css_manhattan.md) | genome-wide CSS, alternating chromosomes, threshold line |
+| [`css_manhattan_mirror()`](https://msk99.github.io/cssig/reference/css_manhattan_mirror.md) | two reciprocal directions above and below zero |
+| [`css_chrom_plot()`](https://msk99.github.io/cssig/reference/css_chrom_plot.md) | one chromosome: raw points, smoothed line, gene marks |
+| [`css_region_plot()`](https://msk99.github.io/cssig/reference/css_region_plot.md) | one region, faceted into CSS + each constituent test |
+| [`css_qq()`](https://msk99.github.io/cssig/reference/css_qq.md), [`css_pdist()`](https://msk99.github.io/cssig/reference/css_pdist.md) | p-value calibration |
+| [`css_fdr_density()`](https://msk99.github.io/cssig/reference/css_fdr_density.md) | q-values inside called regions vs the rest of the genome |
+| [`css_test_cor()`](https://msk99.github.io/cssig/reference/css_test_cor.md) | correlation among constituents and CSS |
+| [`css_circos()`](https://msk99.github.io/cssig/reference/css_circos.md) | circular multi-track genome plot |
+| [`css_theme()`](https://msk99.github.io/cssig/reference/css_theme.md), [`css_genome_coords()`](https://msk99.github.io/cssig/reference/css_genome_coords.md) | building blocks for custom plots |
+
+------------------------------------------------------------------------
+
+## Things worth knowing
+
+**CSS depends only on ranks.** Standardising XP-EHH or ΔDAF to *N*(0,1),
+as both papers do, leaves CSS *exactly* unchanged — it matters only for
+plotting. Any strictly increasing transform of a constituent gives
+identical CSS.
+
+**Ranks are genome-wide.** Adding or removing SNPs changes every SNP’s
+score, so keep the SNP set fixed when comparing runs.
+
+**The CSS p-value is not calibrated on real data.** The formula assumes
+the constituent tests are independent. They are not, and the correlation
+is not always positive: in the bundled `css_sim`, XP-EHH and ΔDAF
+correlate at about −0.32, which *deflates* the variance of Zbar
+(observed sd 0.90 rather than 1.00; permuting each test restores it to
+1.00). Treat CSS as a **ranking**, not a tail probability. This is why
+both papers threshold on the empirical top 0.1% rather than on a
+p-value, and why q-values deserve a look at
+[`css_qq()`](https://msk99.github.io/cssig/reference/css_qq.md) first.
+
+**Pipeline stages modify their object by reference.** `data.table`
+semantics, so a multi-million-row table is never copied between stages:
+
+``` r
+
+res <- css(x)
+"css" %in% names(x)   # TRUE -- x and res are the same object
+```
+
+Your original input is always safe —
+[`css_input()`](https://msk99.github.io/cssig/reference/css_input.md)
+copies it once on the way in — but if you want each stage to return a
+fresh copy, pass `.copy = TRUE`.
+
+------------------------------------------------------------------------
+
+## Bundled data
+
+Simulated, and generated the slow way: a population is simulated and the
+statistics are computed from it, rather than the statistics being drawn
+from a distribution. That matters because the three tests are correlated
+through a shared genealogy, and inventing that correlation would make
+any demonstration circular.
+
+| Object | Contents |
+|----|----|
+| `css_sim` | 46,976 SNPs × 29 bovine autosomes, 8 vs 8 breeds, 800 animals |
+| `css_sim_small` | 5,502 SNPs on chromosomes 1–2, for fast examples |
+| `css_sim_truth` | the 7 known signatures: 6 sweeps and one deliberate false positive |
+
+**These data are simulated and describe no real animal, breed or
+genome.** The generating scripts are in `data-raw/`; see
+[`?css_sim`](https://msk99.github.io/cssig/reference/css_sim.md).
+
+------------------------------------------------------------------------
+
+## Documentation
+
+``` r
+
+vignette("cssig")       # getting started
+vignette("simulation")  # how the data were built, CSS vs its constituents,
+                        # the weights demo, and where the method fails
+?css                    # the statistic, and the two documented deviations
+?css_fdr                # calibration caveats in full
+```
+
+------------------------------------------------------------------------
+
+## Maintainer
+
+Mehar Singh Khatkar — <mehar.khatkar@adelaide.edu.au>
+
+Bug reports and feature requests:
+[github.com/msk99/cssig/issues](https://github.com/msk99/cssig/issues)
+
+## Citation
+
+``` r
+
+citation("cssig")
+```
+
+Randhawa IAS, Khatkar MS, Thomson PC, Raadsma HW (2014). Composite
+selection signals can localize the trait specific genomic regions in
+multi-breed populations of cattle and sheep. *BMC Genetics* **15**:34.
+<doi:%5B10.1186/1471-2156-15-34>\](<https://doi.org/10.1186/1471-2156-15-34>)
+
+Randhawa IAS, Khatkar MS, Thomson PC, Raadsma HW (2015). Composite
+selection signals for complex traits exemplified through bovine stature
+using multibreed cohorts of European and African *Bos taurus*. *G3*
+**5**:1391-1401.
+<doi:%5B10.1534/g3.115.017772>\](<https://doi.org/10.1534/g3.115.017772>)
+
+## Repository contents
+
+| Path | What it is |
+|----|----|
+| `R/`, `man/`, `tests/`, `vignettes/` | the package |
+| `data/` | the simulated example datasets |
+| `data-raw/` | scripts that regenerate them ([design notes](https://msk99.github.io/cssig/data-raw/README.md)) |
+| `inst/extdata/` | a small selscan fixture used by the reader examples |
+
+`data-raw/` and the pkgdown/CI configuration are excluded from the built
+package via `.Rbuildignore`, so the installed package carries only the
+code, data, documentation and tests.
+
+------------------------------------------------------------------------
+
+## Troubleshooting
+
+**[`vignette("cssig")`](https://msk99.github.io/cssig/articles/cssig.md)
+says “not found”.** `install_github()` does not build vignettes unless
+asked. Reinstall with `build_vignettes = TRUE` (see
+[Installation](#installation)), or read them on GitHub.
+
+**Plots crash R, or fail with `no applicable method for 'depth'`, on
+macOS.** Symptoms are a session killed by `zsh: trace trap`, or an error
+followed by `can't shut down a locked device`. Once it happens the
+graphics device is wedged and every later plot fails, so **restart R
+first**.
+
+Then work out which of two situations you are in:
+
+``` r
+
+plot(1:10)                                                  # base graphics
+print(ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + ggplot2::geom_point())
+```
+
+- **Those also fail** — R’s on-screen Quartz device is at fault, not
+  this package. A macOS crash report will show `CFRelease` inside
+  `-[QuartzCocoaView drawRect:]` with no package code on the stack.
+  Write plots to files instead, or use RStudio or Positron, which use a
+  different device.
+- **Those succeed but a `cssig` plot still fails** — that is a bug here;
+  please [open an issue](https://github.com/msk99/cssig/issues) with
+  your [`sessionInfo()`](https://rdrr.io/r/utils/sessionInfo.html).
+  Version 1.0.0 removed the infinite rectangle bounds that were the
+  likeliest trigger, so make sure you are current.
+
+Either way, writing to a file is a reliable workaround:
+
+``` r
+
+ggplot2::ggsave("manhattan.png", css_manhattan(res, regions = reg),
+                width = 10, height = 4, dpi = 150)
+```
+
+------------------------------------------------------------------------
+
+## Licence
+
+GPL-3.
+
+# Package index
+
+## Input
+
+Getting constituent statistics into shape
+
+- [`css_input()`](https://msk99.github.io/cssig/reference/css_input.md)
+  : Assemble constituent selection statistics for a CSS analysis
+- [`css_merge_tests()`](https://msk99.github.io/cssig/reference/css_merge_tests.md)
+  : Join per-test statistic tables into a single CSS input
+- [`read_selscan_xpehh()`](https://msk99.github.io/cssig/reference/read_selscan_xpehh.md)
+  : Read XP-EHH output from selscan
+- [`read_rehh_xpehh()`](https://msk99.github.io/cssig/reference/read_rehh_xpehh.md)
+  : Coerce rehh XP-EHH output for use with CSS
+
+## The CSS pipeline
+
+Score, smooth, threshold, call regions, estimate FDR
+
+- [`css()`](https://msk99.github.io/cssig/reference/css.md) : Compute
+  composite selection signals
+- [`css_smooth()`](https://msk99.github.io/cssig/reference/css_smooth.md)
+  : Smooth CSS scores in sliding genomic windows
+- [`css_threshold()`](https://msk99.github.io/cssig/reference/css_threshold.md)
+  : Apply an empirical significance threshold to CSS scores
+- [`css_regions()`](https://msk99.github.io/cssig/reference/css_regions.md)
+  : Call genomic regions under selection
+- [`css_fdr()`](https://msk99.github.io/cssig/reference/css_fdr.md) :
+  Estimate false discovery rates for CSS p-values
+- [`css_reciprocal()`](https://msk99.github.io/cssig/reference/css_reciprocal.md)
+  : Reciprocal (signed) composite selection signals
+
+## Constituent statistics
+
+Helpers for the constituents computable from allele frequencies
+
+- [`css_fst()`](https://msk99.github.io/cssig/reference/css_fst.md) :
+  Weir and Cockerham's F_ST between two cohorts
+- [`css_ddaf()`](https://msk99.github.io/cssig/reference/css_ddaf.md) :
+  Change in derived allele frequency between cohorts
+- [`css_dsaf()`](https://msk99.github.io/cssig/reference/css_dsaf.md) :
+  Change in selected allele frequency between cohorts
+- [`css_standardize()`](https://msk99.github.io/cssig/reference/css_standardize.md)
+  : Standardise a statistic to mean zero and unit variance
+
+## Visualisation
+
+- [`css_manhattan()`](https://msk99.github.io/cssig/reference/css_manhattan.md)
+  : Genome-wide Manhattan plot of composite selection signals
+- [`css_manhattan_mirror()`](https://msk99.github.io/cssig/reference/css_manhattan_mirror.md)
+  : Mirrored Manhattan plot for reciprocal cohort contrasts
+- [`css_chrom_plot()`](https://msk99.github.io/cssig/reference/css_chrom_plot.md)
+  : Single-chromosome CSS plot
+- [`css_region_plot()`](https://msk99.github.io/cssig/reference/css_region_plot.md)
+  : Regional plot with constituent test tracks
+- [`css_qq()`](https://msk99.github.io/cssig/reference/css_qq.md) : QQ
+  plot of CSS p-values
+- [`css_pdist()`](https://msk99.github.io/cssig/reference/css_pdist.md)
+  : Histogram of CSS p-values
+- [`css_fdr_density()`](https://msk99.github.io/cssig/reference/css_fdr_density.md)
+  : Density of q-values inside called regions versus the rest of the
+  genome
+- [`css_test_cor()`](https://msk99.github.io/cssig/reference/css_test_cor.md)
+  : Correlation among constituent tests and CSS
+- [`css_circos()`](https://msk99.github.io/cssig/reference/css_circos.md)
+  : Circular genome plot of CSS and its constituent tests
+- [`css_theme()`](https://msk99.github.io/cssig/reference/css_theme.md)
+  : A minimal theme for CSS plots
+- [`css_genome_coords()`](https://msk99.github.io/cssig/reference/css_genome_coords.md)
+  : Build cumulative genome coordinates for a genome-wide plot
+
+## Data
+
+- [`css_sim`](https://msk99.github.io/cssig/reference/css_sim.md) :
+  Simulated multi-breed cattle panel with known selection signatures
+- [`css_sim_small`](https://msk99.github.io/cssig/reference/css_sim_small.md)
+  : Two-chromosome subset of the simulated panel
+- [`css_sim_truth`](https://msk99.github.io/cssig/reference/css_sim_truth.md)
+  : Known selection signatures in the simulated panel
+
+## Methods
+
+- [`summary(`*`<css_result>`*`)`](https://msk99.github.io/cssig/reference/summary.css_result.md)
+  : Summarise a CSS result
+- [`summary(`*`<css_regions>`*`)`](https://msk99.github.io/cssig/reference/summary.css_regions.md)
+  : Summarise called regions
+
+# Articles
+
+### Articles
+
+- [Getting started with composite selection
+  signals](https://msk99.github.io/cssig/articles/cssig.md):
+- [The simulated dataset, and does CSS actually beat its
+  constituents?](https://msk99.github.io/cssig/articles/simulation.md):
