@@ -25,9 +25,11 @@ print.css_result <- function(x, ...) {
   cat(sprintf("<css_result> %s SNPs, m = %d constituent tests\n",
               format(nrow(x), big.mark = ","), cl$m %||% NA))
   if (!is.null(cl)) {
+    flags <- paste0(
+      if (!is.null(cl$weights)) "  [WEIGHTED: not the published method]" else "",
+      if (isTRUE(cl$calibrate)) "  [CALIBRATED: not the published method]" else "")
     cat(sprintf("  ties = \"%s\", na_action = \"%s\"%s\n",
-                cl$ties, cl$na_action,
-                if (!is.null(cl$weights)) "  [WEIGHTED: not the published method]" else ""))
+                cl$ties, cl$na_action, flags))
   }
   if (!is.null(sm)) {
     cat(sprintf("  smoothed: %.0f kb window (half-width %.0f kb), min %d SNPs, on \"%s\"\n",

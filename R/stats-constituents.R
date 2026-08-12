@@ -38,6 +38,15 @@ css_fst <- function(count1, n1, count2, n2, ploidy = 2L, floor_zero = FALSE) {
   count1 <- rep_len(count1, n); count2 <- rep_len(count2, n)
   n1 <- rep_len(n1, n);         n2 <- rep_len(n2, n)
 
+  bad <- (!is.na(count1) & !is.na(n1) & (count1 < 0 | count1 > ploidy * n1)) |
+         (!is.na(count2) & !is.na(n2) & (count2 < 0 | count2 > ploidy * n2))
+  if (any(bad)) {
+    .stopf(paste0("%d SNP%s have allele counts outside [0, ploidy * n]. Counts are ",
+                  "copies of an allele out of ploidy * n; are the count and ",
+                  "sample-size arguments swapped?"),
+           sum(bad), if (sum(bad) > 1) "s" else "")
+  }
+
   # Sample sizes in individuals; allele counts out of ploidy * n
   p1 <- count1 / (ploidy * n1)
   p2 <- count2 / (ploidy * n2)

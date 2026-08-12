@@ -58,6 +58,15 @@ test_that("min_snps masks sparse windows", {
   expect_false(any(is.na(head(r$css_smooth, 40))))
 })
 
+test_that("on = 'zbar' refuses weighted results", {
+  set.seed(3)
+  d <- data.frame(chr = "1", pos = seq_len(50) * 1e5,
+                  a = rnorm(50), b = rnorm(50), c = rnorm(50))
+  r <- css(css_input(d, tests = c(a = "high", b = "high", c = "high")),
+           weights = c(1, 1, 2))
+  expect_error(css_smooth(r, on = "zbar"), "weighted")
+})
+
 test_that("region calling recovers an implanted signal and respects the merge gap", {
   set.seed(9)
   n <- 4000L

@@ -19,16 +19,16 @@ NULL
 utils::globalVariables(c(
   ".", ".N", ".I", ".SD", ".GRP",
   "chr", "pos", "snp", "css", "css_smooth", "zbar", "p", "p_adj", "qval",
-  "n_window", "significant", "significant2", "run", "grp", "gap",
-  "chr_cum", "pos_cum", "peak_css", "peak_pos", "peak_snp", "n_snps",
-  "start", "end", "start_padded", "end_padded", "region_id", "direction",
+  "n_window", "significant", "significant2", "run", "gap",
+  "pos_cum", "peak_css", "peak_pos", "peak_snp", "n_snps",
+  "start", "end", "start_padded", "end_padded", "region_id",
   "css_pos", "css_neg", "css_signed", "css_pos_smooth", "css_neg_smooth",
-  "css_signed_smooth", "cohort", "test", "value", "rank_i",
+  "css_signed_smooth", "cohort", "test", "value",
   "smooth_value", "in_region", "x", "y", "xend", "yend", "label", "name", "mid",
-  "chr_index", "shade", "n_sig", "prop", "test1", "test2", "r",
-  "css_raw", "threshold", "is_top", "is_top2", "keep", "..cols",
+  "shade", "n_sig", "test1", "test2", "r",
+  "css_raw", "keep",
   "offset", "len", "lo", "hi", "xmin", "xmax", "up", "down",
   "score", "sig", "sig2", "i.N", "n_tests", ".idx", ".row",
   "daf_selected", "daf_reference", "ancestral", "selected", "near_signal",
-  "ymin", "ymax", "ybase"
+  "ymin", "ymax"
 ))

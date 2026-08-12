@@ -41,6 +41,22 @@
 #' Non-`NULL` `weights` give a Stouffer-style weighted mean z, which is *not*
 #' the published method; the default `NULL` reproduces the papers exactly.
 #'
+#' @section Calibration:
+#' `p = 1 - \Phi(\sqrt{m}\bar{Z})` assumes the constituent tests are
+#' independent. They are correlated in practice, which moves the true null
+#' variance of \eqn{\sqrt{m}\bar{Z}} away from 1 (on [css_sim] the observed sd
+#' is 0.90, explained to three decimals by the cross-test correlations).
+#' `calibrate = TRUE` estimates the correlation matrix of the per-test z
+#' columns genome-wide and divides the statistic by the implied null sd,
+#' \eqn{\sigma^2 = (w' R w) / \sum w^2}, the Stouffer analogue of Brown's
+#' correction for combining correlated tests (Brown 1975; Kost & McDermott
+#' 2002). Under `na_action = "pairwise"` the sd is computed per missingness
+#' pattern. For complete data the correction is a monotone rescaling, so the
+#' CSS *ranking* and the empirical thresholds of [css_threshold()] are
+#' unchanged; only `p`, `css` and downstream q-values move. It is off by
+#' default because it is not the published method, and `print()` flags a
+#' calibrated run.
+#'
 #' @param x A `css_input` object from [css_input()].
 #' @param ties Tie-handling for the rank step, passed to
 #'   [data.table::frank()]: one of `"average"`, `"first"`, `"random"`,
@@ -48,6 +64,9 @@
 #' @param na_action `"pairwise"` (default) or `"omit"`; see Details.
 #' @param weights Optional numeric vector of per-test weights, one per test.
 #'   `NULL` (default) gives the equally weighted mean of the papers.
+#' @param calibrate If `TRUE`, correct the p-value for the estimated
+#'   cross-test correlation; see the Calibration section. Default `FALSE`,
+#'   the published method.
 #' @param .copy If `TRUE`, work on a copy and leave `x` untouched. Default
 #'   `FALSE`, which adds the result columns to `x` by reference.
 #'
@@ -65,6 +84,12 @@
 #' stature using multibreed cohorts of European and African *Bos taurus*.
 #' *G3* 5:1391-1401. \doi{10.1534/g3.115.017772}
 #'
+#' For `calibrate = TRUE`:
+#' Brown MB (1975). A method for combining non-independent, one-sided tests of
+#' significance. *Biometrics* 31:987-992.
+#' Kost JT, McDermott MP (2002). Combining dependent p-values.
+#' *Statistics & Probability Letters* 60:183-190.
+#'
 #' @examples
 #' data(css_sim_small)
 #' x <- css_input(css_sim_small,
@@ -78,6 +103,7 @@ css <- function(x,
                 ties = c("average", "first", "random", "dense"),
                 na_action = c("pairwise", "omit"),
                 weights = NULL,
+                calibrate = FALSE,
                 .copy = FALSE) {
   if (!inherits(x, "css_input")) {
     .stopf("`x` must come from `css_input()`; got <%s>.",
@@ -170,6 +196,42 @@ css <- function(x,
     stat[m_j == 0L] <- NA_real_
   }
 
+  # --- optional calibration for cross-test correlation ----------------------
+  cal <- NULL
+  if (isTRUE(calibrate) && m_all >= 2L) {
+    # The z columns are marginally N(0,1) by construction, so their Pearson
+    # correlation is a rank-based (van der Waerden) correlation, robust to the
+    # tests' marginal distributions.
+    R <- stats::cor(zmat, use = "pairwise.complete.obs")
+    if (anyNA(R)) {
+      .warnf("Some test pairs share no SNPs; their correlation is treated as zero for calibration.")
+      R[is.na(R)] <- 0
+      diag(R) <- 1
+    }
+    w_cal <- if (is.null(weights)) rep(1, m_all) else weights
+    # Var(sum_S w Z / sqrt(sum_S w^2)) = (w_S' R_S w_S) / sum_S w^2, computed
+    # once per missingness pattern S rather than per SNP.
+    pat <- !is.na(zmat)
+    pat_id <- as.integer(pat %*% 2^(seq_len(m_all) - 1L))
+    first <- which(!duplicated(pat_id))
+    sigma_u <- vapply(first, function(r) {
+      S <- which(pat[r, ])
+      if (length(S) < 2L) return(1)
+      wS <- w_cal[S]
+      sqrt(max(drop(t(wS) %*% R[S, S, drop = FALSE] %*% wS) / sum(wS^2), 1e-8))
+    }, numeric(1))
+    stat <- stat / sigma_u[match(pat_id, pat_id[first])]
+    cal <- list(
+      R = R,
+      sigma = stats::setNames(sigma_u, vapply(first, function(r) {
+        paste(test_cols[pat[r, ]], collapse = "+")
+      }, character(1)))
+    )
+  } else if (isTRUE(calibrate)) {
+    .warnf("`calibrate = TRUE` needs at least two tests; ignored.")
+    calibrate <- FALSE
+  }
+
   pv <- stats::pnorm(stat, lower.tail = FALSE)
   # Guard the extreme tail: pnorm() underflows to 0 beyond about z = 38, which
   # would make CSS infinite. Floor at the smallest representable double.
@@ -191,7 +253,8 @@ css <- function(x,
   }
   data.table::setattr(x, "css_call", list(
     ties = ties, na_action = na_action,
-    weights = weights, m = m_all, n = n, tests = tests
+    weights = weights, calibrate = isTRUE(calibrate), calibration = cal,
+    m = m_all, n = n, tests = tests
   ))
   x[]
 }

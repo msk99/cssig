@@ -122,8 +122,13 @@ css_manhattan <- function(x,
   }
 
   if (is.null(subtitle) && !is.null(thr)) {
-    subtitle <- sprintf("Dashed line: top %s of the genome-wide %s distribution (CSS = %.2f)",
-                        .pct(thr$top), score, cut)
+    subtitle <- if (!is.null(cut)) {
+      sprintf("Dashed line: top %s of the genome-wide %s distribution (CSS = %.2f)",
+              .pct(thr$top), score, cut)
+    } else {
+      sprintf("No threshold drawn: the stored threshold applies to the %s score",
+              thr$on)
+    }
   }
 
   p +

@@ -160,6 +160,33 @@ test_that("weights are scale-invariant", {
   expect_equal(a, b, tolerance = 1e-12)
 })
 
+test_that("calibrate = TRUE rescales the statistic by the estimated null sd", {
+  set.seed(15)
+  n <- 2000L
+  v <- rnorm(n)
+  d <- data.frame(chr = "1", pos = seq_len(n) * 1e4, t1 = v, t2 = v, t3 = rnorm(n))
+  x <- css_input(d, tests = c(t1 = "high", t2 = "high", t3 = "high"))
+  raw <- css(x, .copy = TRUE)
+  cal <- css(x, calibrate = TRUE, .copy = TRUE)
+
+  # t1 and t2 are identical, so the true null sd of sqrt(m)*zbar is
+  # sqrt((3 + 2*rho12)/3) ~ sqrt(5/3) ~ 1.29, not the assumed 1.
+  expect_gt(sd(-qnorm(raw$p)), 1.15)
+  expect_equal(sd(-qnorm(cal$p)), 1, tolerance = 0.05)
+
+  # monotone rescaling: the ranking is untouched
+  expect_identical(order(cal$css), order(raw$css))
+
+  cl <- attr(cal, "css_call")
+  expect_true(cl$calibrate)
+  expect_equal(unname(cl$calibration$R["t1", "t2"]), 1, tolerance = 1e-6)
+  expect_false(isTRUE(attr(raw, "css_call")$calibrate))
+
+  # combines with weights without error
+  w <- css(x, weights = c(1, 1, 2), calibrate = TRUE, .copy = TRUE)
+  expect_true(all(is.finite(w$css)))
+})
+
 test_that("a down-weighted test moves CSS towards the others", {
   d <- micro()
   d$t3 <- rev(d$t3)   # make t3 disagree with t1/t2

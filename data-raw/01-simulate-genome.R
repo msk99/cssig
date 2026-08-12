@@ -102,7 +102,8 @@ prethin_sites <- function(ss, p, P, chunk_len) {
 #' @param n_out number of haplotypes to produce (must be even).
 #' @param s selection coefficient; fitness is additive, (1, 1+s/2, 1+s).
 #' @param focal row index of the site under selection, or NA.
-wf_generation <- function(H, pos, n_out, s = 0, focal = NA_integer_) {
+#' @param rec recombination rate in Morgans per bp (P$rec).
+wf_generation <- function(H, pos, n_out, s = 0, focal = NA_integer_, rec = 1e-8) {
   S <- nrow(H); N <- ncol(H); nind <- N %/% 2L
 
   if (!is.na(focal) && s != 0) {
@@ -119,7 +120,7 @@ wf_generation <- function(H, pos, n_out, s = 0, focal = NA_integer_) {
 
   # Crossovers: Poisson in number, uniform in position. Far cheaper than
   # drawing a Bernoulli per site, and identical in distribution.
-  span_morgan <- (pos[S] - pos[1]) * 1e-8
+  span_morgan <- (pos[S] - pos[1]) * rec
   nxo <- stats::rpois(n_out, span_morgan)
   tot <- sum(nxo)
 
@@ -200,9 +201,9 @@ forward_chromosome <- function(bg, chr, P, sweeps, trap) {
         n_carry <- if (is.na(sw$p0[1])) 1L else max(1L, round(sw$p0[1] * ncol(H)))
         H[focal, sample.int(ncol(H), n_carry)] <- 1L
       }
-      H <- wf_generation(H, pos, n_hap, s_b, focal)
+      H <- wf_generation(H, pos, n_hap, s_b, focal, rec = P$rec)
       for (g in seq_len(P$t_sel - 1L)) {
-        H <- wf_generation(H, pos, n_hap, s_b, focal)
+        H <- wf_generation(H, pos, n_hap, s_b, focal, rec = P$rec)
       }
       if (!carries || mean(H[focal, ]) > 0) break
       restarts <- restarts + 1L

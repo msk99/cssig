@@ -15,6 +15,10 @@
 #'     Boundaries are the first and last top-1% SNP of the cluster. Clusters
 #'     closer than `merge_gap` are merged.}
 #' }
+#' "Adjoining" is implemented by distance: top-`top2` SNPs within `merge_gap`
+#' of each other form one cluster even when SNPs below the top-`top2` cut lie
+#' between them, which is slightly more permissive than a literal reading of
+#' the 2015 rule.
 #' Both papers additionally extend regions by 0.5 Mb on each side *for gene
 #' mining only*. That padding is reported in `start_padded` / `end_padded` and
 #' never applied to `start` / `end`, so region boundaries are not silently

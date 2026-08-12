@@ -2,8 +2,7 @@
 # Assemble the shipped datasets and write them to data/.
 #
 # Size budget: the installed package must stay under CRAN's 5 MB. Statistics
-# are rounded to six significant figures and everything is xz-compressed;
-# css_sim_null is dropped first if the budget is exceeded.
+# are rounded to six significant figures and everything is xz-compressed.
 # ---------------------------------------------------------------------------
 
 suppressPackageStartupMessages({

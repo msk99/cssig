@@ -52,6 +52,10 @@ top 0.1\%, flanked by at least \code{min_flank} adjoining SNPs in the top 1\%.
 Boundaries are the first and last top-1\% SNP of the cluster. Clusters
 closer than \code{merge_gap} are merged.}
 }
+"Adjoining" is implemented by distance: top-\code{top2} SNPs within \code{merge_gap}
+of each other form one cluster even when SNPs below the top-\code{top2} cut lie
+between them, which is slightly more permissive than a literal reading of
+the 2015 rule.
 Both papers additionally extend regions by 0.5 Mb on each side \emph{for gene
 mining only}. That padding is reported in \code{start_padded} / \code{end_padded} and
 never applied to \code{start} / \code{end}, so region boundaries are not silently

@@ -6,7 +6,7 @@
 \usage{
 css_fdr(
   x,
-  method = c("BH", "fdrtool", "isotonic"),
+  method = c("BH", "BY", "fdrtool", "empirical-null", "isotonic"),
   force = FALSE,
   .copy = FALSE
 )
@@ -14,7 +14,8 @@ css_fdr(
 \arguments{
 \item{x}{A \code{css_result} from \code{\link[=css]{css()}}.}
 
-\item{method}{One of \code{"BH"}, \code{"fdrtool"}, \code{"isotonic"}.}
+\item{method}{One of \code{"BH"}, \code{"BY"}, \code{"fdrtool"}, \code{"empirical-null"},
+\code{"isotonic"}; see Details.}
 
 \item{force}{Allow FDR estimation even if the object has been smoothed.
 Default \code{FALSE}.}
@@ -22,7 +23,7 @@ Default \code{FALSE}.}
 \item{.copy}{If \code{TRUE}, work on a copy and leave \code{x} untouched.}
 }
 \value{
-\code{x} with a \code{qval} column added (and \code{p_adj} for \code{method = "BH"}).
+\code{x} with a \code{qval} column added (and \code{p_adj} for \code{"BH"} and \code{"BY"}).
 }
 \description{
 Estimate false discovery rates for CSS p-values
@@ -34,13 +35,27 @@ p-value, so feeding smoothed scores into an FDR procedure produces numbers
 that look like q-values but are not. \code{css_fdr()} therefore refuses smoothed
 input unless \code{force = TRUE}.
 
-Three methods are available:
+Five methods are available:
 \describe{
 \item{\code{"BH"}}{Benjamini-Hochberg via \code{\link[stats:p.adjust]{stats::p.adjust()}}. No extra
-dependency; the default.}
+dependency; the default. Its FDR guarantee assumes positive-regression
+dependence, which genome-wide rank statistics with mixed-sign
+cross-test correlation do not obviously satisfy.}
+\item{\code{"BY"}}{Benjamini-Yekutieli (2001) via \code{\link[stats:p.adjust]{stats::p.adjust()}}. Valid
+under arbitrary dependence, at a known cost in power; the conservative
+bound.}
 \item{\code{"fdrtool"}}{Tail-area q-values from the \pkg{fdrtool} package with
 \code{statistic = "pvalue"}. This is the route used by Randhawa et al.
-(2014).}
+(2014). Note the failure mode below: on correlated constituents it can
+estimate the null proportion as 1 and return q = 1 everywhere.}
+\item{\code{"empirical-null"}}{Efron-style empirical null (Efron 2004): the
+\emph{z statistic} \eqn{\sqrt{m}\bar{Z}} is handed to
+\code{fdrtool(statistic = "normal")}, which estimates the null sd from the
+central bulk of the data instead of assuming the independence value 1.
+This directly repairs the \code{"fdrtool"} failure mode. It is two-sided, so
+the low tail -- selection toward the reference cohort -- is scored as
+well, which the upper-tail CSS p-value ignores. The fitted null sd and
+null proportion are stored in the \code{css_fdr} attribute.}
 \item{\code{"isotonic"}}{Recalibrates the empirical p-value distribution with an
 isotonic regression of observed on expected quantiles before passing the
 result to \pkg{fdrtool}. Randhawa et al. (2014) use ConReg-R for this
@@ -68,10 +83,30 @@ distribution rather than on a p-value, and why \code{\link[=css_threshold]{css_t
 same.
 \item FDR estimated from these p-values inherits the miscalibration. On
 \link{css_sim}, \code{fdrtool} estimates the null proportion as 1 and returns
-q = 1 everywhere, while \code{"BH"} returns a usable ordering. Treat q-values
-as a descriptive summary of the p-value distribution, not as a
-guaranteed error rate, and check \code{\link[=css_qq]{css_qq()}} before relying on them.
+q = 1 everywhere, while \code{"BH"} returns a usable ordering. Two repairs
+are available: \code{css(calibrate = TRUE)} corrects the p-values themselves,
+and \code{method = "empirical-null"} fits the null scale when computing
+q-values. Check \code{\link[=css_qq]{css_qq()}} before relying on any of them.
 }
+}
+
+\section{What a per-SNP q-value can and cannot say}{
+
+Even a perfectly calibrated per-SNP q-value answers "is this SNP's
+cross-test rank concordance beyond global-null chance?", not "is this a
+sweep?". A neutral genome violates the independent-ranks null \emph{locally}:
+shared genealogy produces real, selection-free concordance in drift-driven
+blocks, of which the founder-effect trap in \link{css_sim_truth} is the extreme
+case. On \link{css_sim}, the majority of q <= 0.05 SNPs under every method fall
+outside the implanted sweep regions for exactly this reason. Sweep evidence
+remains what the source papers say it is: clustered, smoothed signal called
+into regions against an empirical threshold (\code{\link[=css_smooth]{css_smooth()}},
+\code{\link[=css_threshold]{css_threshold()}}, \code{\link[=css_regions]{css_regions()}}). Treat q-values as a calibrated
+\emph{descriptive} summary of the per-SNP evidence, and note that permuting SNP
+labels cannot rescue region-level error rates -- permutation destroys the
+neutral autocorrelation that generates false clusters, so it is
+anti-conservative for regions; an honest region-level null needs neutral
+simulation or replication across independent cohorts.
 }
 
 \examples{
@@ -81,4 +116,14 @@ res <- css(css_input(css_sim_small,
 res <- css_fdr(res, method = "BH")
 sum(res$qval <= 0.05)
 
+}
+\references{
+Benjamini Y, Yekutieli D (2001). The control of the false discovery rate in
+multiple testing under dependency. \emph{Annals of Statistics} 29:1165-1188.
+
+Efron B (2004). Large-scale simultaneous hypothesis testing: the choice of
+a null hypothesis. \emph{JASA} 99:96-104.
+
+Strimmer K (2008). fdrtool: a versatile R package for estimating local and
+tail area-based false discovery rates. \emph{Bioinformatics} 24:1461-1462.
 }

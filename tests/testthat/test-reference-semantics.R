@@ -105,6 +105,29 @@ test_that("column names that collide with CSS output are rejected", {
   names(d)[names(d) == "fst"] <- "css"
   expect_error(css_input(d, tests = c(css = "high", xpehh = "high", ddaf = "high")),
                "reserved")
+  # n_tests is written by css() under pairwise NA handling
+  d2 <- make_df()
+  names(d2)[names(d2) == "fst"] <- "n_tests"
+  expect_error(css_input(d2, tests = c(n_tests = "high", xpehh = "high", ddaf = "high")),
+               "reserved")
+})
+
+test_that("duplicate test names are rejected with a clear message", {
+  expect_error(css_input(make_df(10), tests = c(fst = "high", fst = "low", ddaf = "high")),
+               "Duplicated test name")
+})
+
+test_that("keep_cols carries annotation columns through the pipeline", {
+  d <- make_df(20)
+  d$maf <- runif(20, 0.05, 0.5)
+  d$gene <- sample(letters, 20, TRUE)
+  x <- css_input(d, tests = tests3, keep_cols = c("maf", "gene"))
+  expect_true(all(c("maf", "gene") %in% names(x)))
+  res <- suppressMessages(css_threshold(css_smooth(css(x))))
+  expect_true(all(c("maf", "gene") %in% names(res)))
+  expect_error(css_input(d, tests = tests3, keep_cols = "absent_col"), "not found")
+  d$css <- 1
+  expect_error(css_input(d, tests = tests3, keep_cols = "css"), "reserved")
 })
 
 test_that("duplicate SNP positions are rejected", {

@@ -95,7 +95,7 @@ chromosome_stats <- function(fw, P, chr) {
   # rehh names the column UNXPEHH_* when standardize = FALSE and XPEHH_* when
   # TRUE, so the pattern must admit both. Standardising happens once,
   # genome-wide, in build_panel() rather than per chromosome.
-  xcol <- grep("^UN?XPEHH", names(xp), value = TRUE)[1]
+  xcol <- grep("^(UN)?XPEHH", names(xp), value = TRUE)[1]
   stopifnot(!is.na(xcol), nrow(xp) == length(pos))
 
   out <- data.table(

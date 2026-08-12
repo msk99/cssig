@@ -320,8 +320,8 @@ circular.
 
 | Object | Contents |
 |---|---|
-| `css_sim` | 46,939 SNPs × 29 bovine autosomes, 8 vs 8 breeds, 800 animals |
-| `css_sim_small` | 5,468 SNPs on chromosomes 1–2, for fast examples |
+| `css_sim` | 46,976 SNPs × 29 bovine autosomes, 8 vs 8 breeds, 800 animals |
+| `css_sim_small` | 5,502 SNPs on chromosomes 1–2, for fast examples |
 | `css_sim_truth` | the 7 known signatures: 6 sweeps and one deliberate false positive |
 
 **These data are simulated and describe no real animal, breed or genome.** The

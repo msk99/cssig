@@ -35,6 +35,10 @@
 #' @param tests A named character vector mapping column names to directions,
 #'   for example `c(fst = "high", xpehh = "high", ddaf = "high")`. Names are the
 #'   columns of `data`; values are one of `"high"`, `"low"` or `"abs"`.
+#' @param keep_cols Optional character vector of additional columns of `data`
+#'   to carry through unchanged, for example MAF or gene annotation. They ride
+#'   along untouched through every pipeline stage, and can be smoothed with the
+#'   `cols` argument of [css_smooth()].
 #' @param drop_na_pos Drop rows with a missing chromosome or position.
 #'   Default `TRUE`.
 #'
@@ -54,12 +58,18 @@ css_input <- function(data,
                       pos = "pos",
                       snp = NULL,
                       tests,
+                      keep_cols = NULL,
                       drop_na_pos = TRUE) {
   if (missing(tests) || !length(tests)) {
     .stopf("`tests` must name at least two constituent test columns.")
   }
   if (is.null(names(tests))) {
     .stopf("`tests` must be a *named* vector, e.g. c(fst = \"high\", xpehh = \"high\").")
+  }
+  if (anyDuplicated(names(tests))) {
+    .stopf("Duplicated test name%s in `tests`: %s. Each column can appear once.",
+           if (sum(duplicated(names(tests))) > 1) "s" else "",
+           paste0("`", unique(names(tests)[duplicated(names(tests))]), "`", collapse = ", "))
   }
   if (is.matrix(data)) data <- as.data.frame(data)
   if (!is.data.frame(data)) {
@@ -80,7 +90,10 @@ css_input <- function(data,
            paste0("\"", unique(bad_dir), "\"", collapse = ", "))
   }
 
-  needed <- c(chr, pos, if (!is.null(snp)) snp, test_cols)
+  keep_cols <- setdiff(as.character(keep_cols %||% character(0)),
+                       c(chr, pos, snp, test_cols))
+
+  needed <- c(chr, pos, if (!is.null(snp)) snp, test_cols, keep_cols)
   absent <- setdiff(needed, names(data))
   if (length(absent)) {
     .stopf("Column%s not found in `data`: %s.\nAvailable columns: %s.",
@@ -90,11 +103,16 @@ css_input <- function(data,
   }
 
   # Refuse names that pipeline stages would later overwrite (PLAN.md 3.7 #5).
-  clash <- intersect(test_cols, .css_reserved)
+  clash <- intersect(c(test_cols, keep_cols), .css_reserved)
   if (length(clash)) {
-    .stopf(paste0("These test columns use names reserved for CSS output: %s.\n",
+    .stopf(paste0("These columns use names reserved for CSS output: %s.\n",
                   "Rename them before calling `css_input()`."),
            paste0("`", clash, "`", collapse = ", "))
+  }
+  clash_id <- intersect(keep_cols, c("chr", "pos", "snp"))
+  if (length(clash_id)) {
+    .stopf("`keep_cols` may not use the identifier names %s.",
+           paste0("`", clash_id, "`", collapse = ", "))
   }
 
   if (length(test_cols) < 2L) {
@@ -104,9 +122,9 @@ css_input <- function(data,
 
   # --- defensive copy: the caller's object is never touched ------------------
   dt <- data.table::as.data.table(data)   # copies a data.frame; may alias a data.table
-  cols <- c(chr, pos, if (!is.null(snp)) snp, test_cols)
+  cols <- c(chr, pos, if (!is.null(snp)) snp, test_cols, keep_cols)
   dt <- dt[, cols, with = FALSE]          # subset always allocates, so we now own `dt`
-  new_names <- c("chr", "pos", if (!is.null(snp)) "snp", test_cols)
+  new_names <- c("chr", "pos", if (!is.null(snp)) "snp", test_cols, keep_cols)
   data.table::setnames(dt, cols, new_names)
   if (is.null(snp)) dt[, snp := NA_character_]
 
@@ -143,7 +161,7 @@ css_input <- function(data,
   }
 
   data.table::setkeyv(dt, c("chr", "pos"))
-  data.table::setcolorder(dt, c("chr", "pos", "snp", test_cols))
+  data.table::setcolorder(dt, c("chr", "pos", "snp", test_cols, keep_cols))
 
   na_counts <- vapply(test_cols, function(tc) sum(is.na(dt[[tc]])), integer(1))
 

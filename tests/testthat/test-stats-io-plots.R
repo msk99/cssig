@@ -9,6 +9,13 @@ test_that("Weir & Cockerham F_ST behaves at known extremes", {
   expect_length(css_fst(c(10, 20, 30), 25, c(30, 20, 10), 25), 3L)
 })
 
+test_that("css_fst rejects counts outside [0, ploidy * n]", {
+  expect_error(css_fst(count1 = 30, n1 = 10, count2 = 5, n2 = 10), "swapped")
+  expect_error(css_fst(count1 = -1, n1 = 10, count2 = 5, n2 = 10), "swapped")
+  # boundary values are legal
+  expect_silent(css_fst(count1 = 20, n1 = 10, count2 = 0, n2 = 10))
+})
+
 test_that("floor_zero only truncates, and cannot change CSS", {
   set.seed(1)
   c1 <- rbinom(500, 50, 0.3); c2 <- rbinom(500, 50, 0.3)
@@ -64,6 +71,66 @@ test_that("BH q-values are monotone in p and bounded", {
   expect_true(all(res$qval >= 0 & res$qval <= 1))
   o <- order(res$p)
   expect_false(is.unsorted(res$qval[o]))
+})
+
+test_that("BY q-values are valid and never below BH", {
+  set.seed(8)
+  n <- 1000L
+  d <- data.frame(chr = "1", pos = seq_len(n) * 1e5,
+                  a = rnorm(n), b = rnorm(n), c = rnorm(n))
+  x <- css(css_input(d, tests = c(a = "high", b = "high", c = "high")))
+  bh <- suppressMessages(css_fdr(x, method = "BH", .copy = TRUE))
+  by <- suppressMessages(css_fdr(x, method = "BY", .copy = TRUE))
+  expect_true(all(by$qval >= bh$qval - 1e-12))
+  o <- order(by$p)
+  expect_false(is.unsorted(by$qval[o]))
+})
+
+test_that("empirical-null q-values fit the null sd on the z scale", {
+  skip_if_not_installed("fdrtool")
+  set.seed(16)
+  n <- 5000L
+  v <- rnorm(n)
+  # t1 = t2 makes the true null sd sqrt(5/3) ~ 1.29; the p-value route
+  # (uniform null) cannot see that, the normal-mode fit can.
+  d <- data.frame(chr = "1", pos = seq_len(n) * 1e4, t1 = v, t2 = v, t3 = rnorm(n))
+  res <- suppressMessages(
+    css_fdr(css(css_input(d, tests = c(t1 = "high", t2 = "high", t3 = "high"))),
+            method = "empirical-null"))
+  expect_true(all(res$qval >= 0 & res$qval <= 1, na.rm = TRUE))
+  info <- attr(res, "css_fdr")
+  expect_gt(info$null_sd, 1.1)
+  expect_lt(info$null_sd, 1.5)
+})
+
+test_that("css_fdr_density separates called regions from the rest", {
+  set.seed(9)
+  n <- 3000L
+  d <- data.frame(chr = "1", pos = seq_len(n) * 5e4,
+                  a = rnorm(n), b = rnorm(n), c = rnorm(n))
+  hit <- 1500:1520
+  d$a[hit] <- d$a[hit] + 6; d$b[hit] <- d$b[hit] + 6; d$c[hit] <- d$c[hit] + 6
+  res <- suppressMessages(css_fdr(css(css_input(d, tests = c(a = "high", b = "high", c = "high"))),
+                                  method = "BH"))
+  res <- suppressMessages(css_threshold(css_smooth(res)))
+  reg <- css_regions(res)
+  expect_gt(nrow(reg), 0L)
+  expect_s3_class(css_fdr_density(res, reg), "ggplot")
+  expect_error(css_fdr_density(res, reg[0]), "empty")
+})
+
+test_that("css_circos draws without error", {
+  skip_if_not_installed("circlize")
+  set.seed(17)
+  # dense spacing so the 1 Mb smoothing window keeps every SNP
+  d <- data.frame(chr = rep(c("1", "2"), each = 100),
+                  pos = rep(seq_len(100) * 1e5, 2),
+                  fst = runif(200), xpehh = rnorm(200), ddaf = rnorm(200))
+  res <- suppressMessages(
+    css_smooth(css(css_input(d, tests = c(fst = "high", xpehh = "high", ddaf = "high")))))
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  expect_no_error(suppressMessages(css_circos(res)))
 })
 
 test_that("reciprocal CSS is antisymmetric when the tests are mirrored", {
@@ -180,4 +247,6 @@ test_that("the selscan reader round-trips the shipped fixture", {
   expect_false(is.unsorted(out$pos))
   expect_error(read_selscan_xpehh(f), "must be supplied")
   expect_error(read_selscan_xpehh("nope.txt", chr = 1), "not found")
+  # forcing normalised = TRUE on a plain file must error, not silently fall back
+  expect_error(read_selscan_xpehh(f, chr = 1, normalised = TRUE), "normxpehh")
 })

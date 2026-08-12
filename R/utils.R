@@ -6,9 +6,9 @@ NULL
 # Reserved output column names. css_input() refuses input that would collide
 # with these, so that pipeline stages can never silently overwrite user data.
 .css_reserved <- c(
-  "zbar", "p", "css", "css_smooth", "n_window", "significant", "significant2",
-  "qval", "p_adj", "pos_cum", "css_pos", "css_neg", "css_signed",
-  "css_pos_smooth", "css_neg_smooth", "css_signed_smooth"
+  "zbar", "p", "css", "n_tests", "css_smooth", "n_window", "significant",
+  "significant2", "qval", "p_adj", "pos_cum", "css_pos", "css_neg",
+  "css_signed", "css_pos_smooth", "css_neg_smooth", "css_signed_smooth"
 )
 
 .stopf <- function(...) stop(sprintf(...), call. = FALSE)
@@ -28,9 +28,7 @@ NULL
 }
 
 .as_chrom_factor <- function(x) {
-  if (is.factor(x) && !is.null(attr(x, "css_ordered"))) return(x)
-  f <- factor(as.character(x), levels = .order_chrom_levels(x))
-  f
+  factor(as.character(x), levels = .order_chrom_levels(x))
 }
 
 # Weighted-or-plain check that an object is a css_result carrying `col`.

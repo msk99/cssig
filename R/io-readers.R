@@ -25,8 +25,14 @@ read_selscan_xpehh <- function(file, chr, normalised = NULL) {
   nm <- tolower(names(d))
 
   # selscan writes: id pos gpos p1 ihh1 p2 ihh2 xpehh  (+ normxpehh crit if normalised)
-  if (is.null(normalised)) normalised <- any(grepl("^normxpehh", nm))
-  val_col <- if (normalised && any(grepl("^normxpehh", nm))) {
+  has_norm <- any(grepl("^normxpehh", nm))
+  if (is.null(normalised)) normalised <- has_norm
+  if (normalised && !has_norm) {
+    .stopf(paste0("`normalised = TRUE` but no `normxpehh` column found; this does not ",
+                  "look like a selscan `norm` output file. Columns: %s."),
+           paste(names(d), collapse = ", "))
+  }
+  val_col <- if (normalised) {
     names(d)[grep("^normxpehh", nm)[1]]
   } else if (any(nm == "xpehh")) {
     names(d)[which(nm == "xpehh")[1]]

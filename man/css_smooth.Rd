@@ -27,7 +27,10 @@ Default \code{5}.}
 \eqn{-\log_{10}(p)} CSS score, matching the published figures. \code{"zbar"}
 averages the mean z instead and re-derives a p-value from the smoothed
 value, which is not what the papers plot but is available for users who
-prefer it.}
+prefer it. \code{"zbar"} is refused for weighted and reciprocal results, whose
+statistic is not \code{sqrt(m) * zbar}; under \code{na_action = "pairwise"} its
+re-derived p-value uses the global \code{m}, an approximation for SNPs scored
+by fewer tests.}
 
 \item{cols}{Optional character vector of additional columns to smooth, for
 example the constituent tests, for side-by-side comparison. Smoothed

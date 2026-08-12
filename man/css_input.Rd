@@ -10,6 +10,7 @@ css_input(
   pos = "pos",
   snp = NULL,
   tests,
+  keep_cols = NULL,
   drop_na_pos = TRUE
 )
 }
@@ -27,6 +28,11 @@ form \code{"chr:pos"} is generated.}
 \item{tests}{A named character vector mapping column names to directions,
 for example \code{c(fst = "high", xpehh = "high", ddaf = "high")}. Names are the
 columns of \code{data}; values are one of \code{"high"}, \code{"low"} or \code{"abs"}.}
+
+\item{keep_cols}{Optional character vector of additional columns of \code{data}
+to carry through unchanged, for example MAF or gene annotation. They ride
+along untouched through every pipeline stage, and can be smoothed with the
+\code{cols} argument of \code{\link[=css_smooth]{css_smooth()}}.}
 
 \item{drop_na_pos}{Drop rows with a missing chromosome or position.
 Default \code{TRUE}.}

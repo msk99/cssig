@@ -11,6 +11,7 @@ Implements the composite selection signals (CSS) method of Randhawa et al. (2014
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://msk99.github.io/cssig/}
   \item \url{https://github.com/msk99/cssig}
   \item Report bugs at \url{https://github.com/msk99/cssig/issues}
 }

@@ -34,7 +34,10 @@
 #'   \eqn{-\log_{10}(p)} CSS score, matching the published figures. `"zbar"`
 #'   averages the mean z instead and re-derives a p-value from the smoothed
 #'   value, which is not what the papers plot but is available for users who
-#'   prefer it.
+#'   prefer it. `"zbar"` is refused for weighted and reciprocal results, whose
+#'   statistic is not `sqrt(m) * zbar`; under `na_action = "pairwise"` its
+#'   re-derived p-value uses the global `m`, an approximation for SNPs scored
+#'   by fewer tests.
 #' @param cols Optional character vector of additional columns to smooth, for
 #'   example the constituent tests, for side-by-side comparison. Smoothed
 #'   columns are suffixed `_smooth`.
@@ -66,6 +69,11 @@ css_smooth <- function(x,
   recip <- !is.null(attr(x, "css_reciprocal"))
   if (recip && on == "zbar") {
     .stopf("`on = \"zbar\"` is not available for a reciprocal result; its directed scores are already -log10(p).")
+  }
+  if (on == "zbar" && !is.null(attr(x, "css_call")$weights)) {
+    .stopf(paste0("`on = \"zbar\"` is not available for a weighted result: the weighted ",
+                  "statistic is sum(w*z)/sqrt(sum(w^2)), not sqrt(m)*zbar, so the ",
+                  "back-transform would be wrong. Smooth the default `on = \"css\"` instead."))
   }
   primary <- if (recip) "css_pos" else on
   .require_col(x, c("chr", "pos", if (recip) c("css_pos", "css_neg") else on),

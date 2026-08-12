@@ -1,7 +1,7 @@
 Package: cssig
 Type: Package
 Title: Composite Selection Signals for Detecting Signatures of Selection
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: c(
     person("Mehar Singh", "Khatkar", email = "mehar.khatkar@adelaide.edu.au",
            role = c("aut", "cre")))
@@ -26,6 +26,7 @@ Depends:
 Imports:
     data.table (>= 1.15.0),
     ggplot2,
+    graphics,
     stats,
     utils
 Suggests:
@@ -36,11 +37,10 @@ Suggests:
     rmarkdown,
     scrm,
     testthat (>= 3.0.0),
-    tibble,
-    vdiffr
+    tibble
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-URL: https://github.com/msk99/cssig
+URL: https://msk99.github.io/cssig/, https://github.com/msk99/cssig
 BugReports: https://github.com/msk99/cssig/issues
 Config/roxygen2/version: 8.0.0

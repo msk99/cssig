@@ -7,13 +7,27 @@
 #' that look like q-values but are not. `css_fdr()` therefore refuses smoothed
 #' input unless `force = TRUE`.
 #'
-#' Three methods are available:
+#' Five methods are available:
 #' \describe{
 #'   \item{`"BH"`}{Benjamini-Hochberg via [stats::p.adjust()]. No extra
-#'     dependency; the default.}
+#'     dependency; the default. Its FDR guarantee assumes positive-regression
+#'     dependence, which genome-wide rank statistics with mixed-sign
+#'     cross-test correlation do not obviously satisfy.}
+#'   \item{`"BY"`}{Benjamini-Yekutieli (2001) via [stats::p.adjust()]. Valid
+#'     under arbitrary dependence, at a known cost in power; the conservative
+#'     bound.}
 #'   \item{`"fdrtool"`}{Tail-area q-values from the \pkg{fdrtool} package with
 #'     `statistic = "pvalue"`. This is the route used by Randhawa et al.
-#'     (2014).}
+#'     (2014). Note the failure mode below: on correlated constituents it can
+#'     estimate the null proportion as 1 and return q = 1 everywhere.}
+#'   \item{`"empirical-null"`}{Efron-style empirical null (Efron 2004): the
+#'     *z statistic* \eqn{\sqrt{m}\bar{Z}} is handed to
+#'     `fdrtool(statistic = "normal")`, which estimates the null sd from the
+#'     central bulk of the data instead of assuming the independence value 1.
+#'     This directly repairs the `"fdrtool"` failure mode. It is two-sided, so
+#'     the low tail -- selection toward the reference cohort -- is scored as
+#'     well, which the upper-tail CSS p-value ignores. The fitted null sd and
+#'     null proportion are stored in the `css_fdr` attribute.}
 #'   \item{`"isotonic"`}{Recalibrates the empirical p-value distribution with an
 #'     isotonic regression of observed on expected quantiles before passing the
 #'     result to \pkg{fdrtool}. Randhawa et al. (2014) use ConReg-R for this
@@ -40,18 +54,47 @@
 #'     same.
 #'   \item FDR estimated from these p-values inherits the miscalibration. On
 #'     [css_sim], `fdrtool` estimates the null proportion as 1 and returns
-#'     q = 1 everywhere, while `"BH"` returns a usable ordering. Treat q-values
-#'     as a descriptive summary of the p-value distribution, not as a
-#'     guaranteed error rate, and check [css_qq()] before relying on them.
+#'     q = 1 everywhere, while `"BH"` returns a usable ordering. Two repairs
+#'     are available: `css(calibrate = TRUE)` corrects the p-values themselves,
+#'     and `method = "empirical-null"` fits the null scale when computing
+#'     q-values. Check [css_qq()] before relying on any of them.
 #' }
 #'
+#' @section What a per-SNP q-value can and cannot say:
+#' Even a perfectly calibrated per-SNP q-value answers "is this SNP's
+#' cross-test rank concordance beyond global-null chance?", not "is this a
+#' sweep?". A neutral genome violates the independent-ranks null *locally*:
+#' shared genealogy produces real, selection-free concordance in drift-driven
+#' blocks, of which the founder-effect trap in [css_sim_truth] is the extreme
+#' case. On [css_sim], the majority of q <= 0.05 SNPs under every method fall
+#' outside the implanted sweep regions for exactly this reason. Sweep evidence
+#' remains what the source papers say it is: clustered, smoothed signal called
+#' into regions against an empirical threshold ([css_smooth()],
+#' [css_threshold()], [css_regions()]). Treat q-values as a calibrated
+#' *descriptive* summary of the per-SNP evidence, and note that permuting SNP
+#' labels cannot rescue region-level error rates -- permutation destroys the
+#' neutral autocorrelation that generates false clusters, so it is
+#' anti-conservative for regions; an honest region-level null needs neutral
+#' simulation or replication across independent cohorts.
+#'
 #' @param x A `css_result` from [css()].
-#' @param method One of `"BH"`, `"fdrtool"`, `"isotonic"`.
+#' @param method One of `"BH"`, `"BY"`, `"fdrtool"`, `"empirical-null"`,
+#'   `"isotonic"`; see Details.
 #' @param force Allow FDR estimation even if the object has been smoothed.
 #'   Default `FALSE`.
 #' @param .copy If `TRUE`, work on a copy and leave `x` untouched.
 #'
-#' @return `x` with a `qval` column added (and `p_adj` for `method = "BH"`).
+#' @return `x` with a `qval` column added (and `p_adj` for `"BH"` and `"BY"`).
+#'
+#' @references
+#' Benjamini Y, Yekutieli D (2001). The control of the false discovery rate in
+#' multiple testing under dependency. *Annals of Statistics* 29:1165-1188.
+#'
+#' Efron B (2004). Large-scale simultaneous hypothesis testing: the choice of
+#' a null hypothesis. *JASA* 99:96-104.
+#'
+#' Strimmer K (2008). fdrtool: a versatile R package for estimating local and
+#' tail area-based false discovery rates. *Bioinformatics* 24:1461-1462.
 #'
 #' @examples
 #' data(css_sim_small)
@@ -61,7 +104,7 @@
 #' sum(res$qval <= 0.05)
 #'
 #' @export
-css_fdr <- function(x, method = c("BH", "fdrtool", "isotonic"),
+css_fdr <- function(x, method = c("BH", "BY", "fdrtool", "empirical-null", "isotonic"),
                     force = FALSE, .copy = FALSE) {
   method <- match.arg(method)
   .require_col(x, "p", "css_fdr")
@@ -79,8 +122,8 @@ css_fdr <- function(x, method = c("BH", "fdrtool", "isotonic"),
   q <- rep(NA_real_, length(pv))
   info <- list(method = method, n = sum(ok))
 
-  if (method == "BH") {
-    q[ok] <- stats::p.adjust(pv[ok], method = "BH")
+  if (method %in% c("BH", "BY")) {
+    q[ok] <- stats::p.adjust(pv[ok], method = method)
     data.table::set(x, j = "p_adj", value = q)
   } else {
     if (!requireNamespace("fdrtool", quietly = TRUE)) {
@@ -88,15 +131,27 @@ css_fdr <- function(x, method = c("BH", "fdrtool", "isotonic"),
                     "Install it with install.packages(\"fdrtool\"), or use method = \"BH\"."),
              method)
     }
-    p_use <- pv[ok]
-    if (method == "isotonic") {
-      cal <- .recalibrate_p(p_use)
-      p_use <- cal$calibrated
-      info$calibration <- cal$map
+    if (method == "empirical-null") {
+      # Recover the z statistic from the stored p-value; the clamp keeps
+      # qnorm() finite where p was floored at double.xmin or hit exactly 1.
+      z <- stats::qnorm(pmin(pmax(pv[ok], .Machine$double.xmin),
+                             1 - .Machine$double.eps / 2),
+                        lower.tail = FALSE)
+      ft <- fdrtool::fdrtool(z, statistic = "normal", plot = FALSE, verbose = FALSE)
+      q[ok] <- ft$qval
+      info$null_sd <- ft$param[1, "sd"]
+      info$eta0 <- ft$param[1, "eta0"]
+    } else {
+      p_use <- pv[ok]
+      if (method == "isotonic") {
+        cal <- .recalibrate_p(p_use)
+        p_use <- cal$calibrated
+        info$calibration <- cal$map
+      }
+      ft <- fdrtool::fdrtool(p_use, statistic = "pvalue", plot = FALSE, verbose = FALSE)
+      q[ok] <- ft$qval
+      info$eta0 <- ft$param[1, "eta0"]
     }
-    ft <- fdrtool::fdrtool(p_use, statistic = "pvalue", plot = FALSE, verbose = FALSE)
-    q[ok] <- ft$qval
-    info$eta0 <- ft$param[1, "eta0"]
   }
 
   data.table::set(x, j = "qval", value = q)

@@ -9,6 +9,7 @@ css(
   ties = c("average", "first", "random", "dense"),
   na_action = c("pairwise", "omit"),
   weights = NULL,
+  calibrate = FALSE,
   .copy = FALSE
 )
 }
@@ -23,6 +24,10 @@ css(
 
 \item{weights}{Optional numeric vector of per-test weights, one per test.
 \code{NULL} (default) gives the equally weighted mean of the papers.}
+
+\item{calibrate}{If \code{TRUE}, correct the p-value for the estimated
+cross-test correlation; see the Calibration section. Default \code{FALSE},
+the published method.}
 
 \item{.copy}{If \code{TRUE}, work on a copy and leave \code{x} untouched. Default
 \code{FALSE}, which adds the result columns to \code{x} by reference.}
@@ -77,6 +82,24 @@ Non-\code{NULL} \code{weights} give a Stouffer-style weighted mean z, which is \
 the published method; the default \code{NULL} reproduces the papers exactly.
 }
 
+\section{Calibration}{
+
+\verb{p = 1 - \\Phi(\\sqrt\{m\}\\bar\{Z\})} assumes the constituent tests are
+independent. They are correlated in practice, which moves the true null
+variance of \eqn{\sqrt{m}\bar{Z}} away from 1 (on \link{css_sim} the observed sd
+is 0.90, explained to three decimals by the cross-test correlations).
+\code{calibrate = TRUE} estimates the correlation matrix of the per-test z
+columns genome-wide and divides the statistic by the implied null sd,
+\eqn{\sigma^2 = (w' R w) / \sum w^2}, the Stouffer analogue of Brown's
+correction for combining correlated tests (Brown 1975; Kost & McDermott
+2002). Under \code{na_action = "pairwise"} the sd is computed per missingness
+pattern. For complete data the correction is a monotone rescaling, so the
+CSS \emph{ranking} and the empirical thresholds of \code{\link[=css_threshold]{css_threshold()}} are
+unchanged; only \code{p}, \code{css} and downstream q-values move. It is off by
+default because it is not the published method, and \code{print()} flags a
+calibrated run.
+}
+
 \examples{
 data(css_sim_small)
 x <- css_input(css_sim_small,
@@ -95,6 +118,12 @@ Randhawa IAS, Khatkar MS, Thomson PC, Raadsma HW (2015).
 Composite selection signals for complex traits exemplified through bovine
 stature using multibreed cohorts of European and African \emph{Bos taurus}.
 \emph{G3} 5:1391-1401. \doi{10.1534/g3.115.017772}
+
+For \code{calibrate = TRUE}:
+Brown MB (1975). A method for combining non-independent, one-sided tests of
+significance. \emph{Biometrics} 31:987-992.
+Kost JT, McDermott MP (2002). Combining dependent p-values.
+\emph{Statistics & Probability Letters} 60:183-190.
 }
 \seealso{
 \code{\link[=css_smooth]{css_smooth()}}, \code{\link[=css_threshold]{css_threshold()}}, \code{\link[=css_regions]{css_regions()}}
