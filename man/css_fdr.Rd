@@ -12,41 +12,41 @@ css_fdr(
 )
 }
 \arguments{
-\item{x}{A `css_result` from [css()].}
+\item{x}{A \code{css_result} from \code{\link[=css]{css()}}.}
 
-\item{method}{One of `"BH"`, `"fdrtool"`, `"isotonic"`.}
+\item{method}{One of \code{"BH"}, \code{"fdrtool"}, \code{"isotonic"}.}
 
 \item{force}{Allow FDR estimation even if the object has been smoothed.
-Default `FALSE`.}
+Default \code{FALSE}.}
 
-\item{.copy}{If `TRUE`, work on a copy and leave `x` untouched.}
+\item{.copy}{If \code{TRUE}, work on a copy and leave \code{x} untouched.}
 }
 \value{
-`x` with a `qval` column added (and `p_adj` for `method = "BH"`).
+\code{x} with a \code{qval} column added (and \code{p_adj} for \code{method = "BH"}).
 }
 \description{
 Estimate false discovery rates for CSS p-values
 }
 \details{
-FDR is computed from the **unsmoothed** CSS p-values. Smoothing averages
+FDR is computed from the \strong{unsmoothed} CSS p-values. Smoothing averages
 \eqn{-\log_{10}(p)} over neighbouring SNPs, and the result is no longer a
 p-value, so feeding smoothed scores into an FDR procedure produces numbers
-that look like q-values but are not. `css_fdr()` therefore refuses smoothed
-input unless `force = TRUE`.
+that look like q-values but are not. \code{css_fdr()} therefore refuses smoothed
+input unless \code{force = TRUE}.
 
 Three methods are available:
 \describe{
-  \item{`"BH"`}{Benjamini-Hochberg via [stats::p.adjust()]. No extra
-    dependency; the default.}
-  \item{`"fdrtool"`}{Tail-area q-values from the \pkg{fdrtool} package with
-    `statistic = "pvalue"`. This is the route used by Randhawa et al.
-    (2014).}
-  \item{`"isotonic"`}{Recalibrates the empirical p-value distribution with an
-    isotonic regression of observed on expected quantiles before passing the
-    result to \pkg{fdrtool}. Randhawa et al. (2014) use ConReg-R for this
-    step. **This is a reimplementation in the same spirit, not ConReg-R**,
-    and will not reproduce it exactly. The recalibration map is returned in
-    the `css_fdr` attribute so it can be inspected.}
+\item{\code{"BH"}}{Benjamini-Hochberg via \code{\link[stats:p.adjust]{stats::p.adjust()}}. No extra
+dependency; the default.}
+\item{\code{"fdrtool"}}{Tail-area q-values from the \pkg{fdrtool} package with
+\code{statistic = "pvalue"}. This is the route used by Randhawa et al.
+(2014).}
+\item{\code{"isotonic"}}{Recalibrates the empirical p-value distribution with an
+isotonic regression of observed on expected quantiles before passing the
+result to \pkg{fdrtool}. Randhawa et al. (2014) use ConReg-R for this
+step. \strong{This is a reimplementation in the same spirit, not ConReg-R},
+and will not reproduce it exactly. The recalibration map is returned in
+the \code{css_fdr} attribute so it can be inspected.}
 }
 }
 \section{The CSS p-value is not calibrated on real data}{
@@ -54,23 +54,23 @@ Three methods are available:
 \eqn{p = 1 - \Phi(m^{1/2}\bar{Z})} assumes the constituent tests are
 independent, so that \eqn{\bar{Z}} has variance \eqn{1/m}. Real constituent
 tests are correlated, and the correlation need not be positive: on the
-shipped [css_sim] data XP-EHH and \eqn{\Delta}DAF have Spearman correlation
-about -0.32, which *deflates* the variance of \eqn{\bar{Z}}. The observed
+shipped \link{css_sim} data XP-EHH and \eqn{\Delta}DAF have Spearman correlation
+about -0.32, which \emph{deflates} the variance of \eqn{\bar{Z}}. The observed
 standard deviation of \eqn{m^{1/2}\bar{Z}} there is 0.90 rather than 1;
 permuting each test independently restores it to 1.00.
 
 The practical consequences:
 \itemize{
-  \item CSS p-values, and therefore CSS scores, are useful as a *ranking*
-    but should not be read as calibrated tail probabilities. This is why both
-    source papers threshold on the empirical top 0.1% of the genome-wide
-    distribution rather than on a p-value, and why [css_threshold()] does the
-    same.
-  \item FDR estimated from these p-values inherits the miscalibration. On
-    [css_sim], `fdrtool` estimates the null proportion as 1 and returns
-    q = 1 everywhere, while `"BH"` returns a usable ordering. Treat q-values
-    as a descriptive summary of the p-value distribution, not as a
-    guaranteed error rate, and check [css_qq()] before relying on them.
+\item CSS p-values, and therefore CSS scores, are useful as a \emph{ranking}
+but should not be read as calibrated tail probabilities. This is why both
+source papers threshold on the empirical top 0.1\% of the genome-wide
+distribution rather than on a p-value, and why \code{\link[=css_threshold]{css_threshold()}} does the
+same.
+\item FDR estimated from these p-values inherits the miscalibration. On
+\link{css_sim}, \code{fdrtool} estimates the null proportion as 1 and returns
+q = 1 everywhere, while \code{"BH"} returns a usable ordering. Treat q-values
+as a descriptive summary of the p-value distribution, not as a
+guaranteed error rate, and check \code{\link[=css_qq]{css_qq()}} before relying on them.
 }
 }
 

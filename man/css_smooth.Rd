@@ -14,33 +14,34 @@ css_smooth(
 )
 }
 \arguments{
-\item{x}{A `css_result` from [css()], or any keyed table with `chr`, `pos`
-and the columns named in `cols`.}
+\item{x}{A \code{css_result} from \code{\link[=css]{css()}} or \code{\link[=css_reciprocal]{css_reciprocal()}}, or any keyed
+table with \code{chr}, \code{pos} and the columns named in \code{cols}.}
 
-\item{half_width}{Half the window width in base pairs. Default `5e5`, giving
+\item{half_width}{Half the window width in base pairs. Default \code{5e5}, giving
 the 1 Mb window of the papers.}
 
 \item{min_snps}{Minimum number of SNPs in a window for it to be retained.
-Default `5`.}
+Default \code{5}.}
 
-\item{on}{What to smooth. `"css"` (default) averages the
-\eqn{-\log_{10}(p)} CSS score, matching the published figures. `"zbar"`
+\item{on}{What to smooth. \code{"css"} (default) averages the
+\eqn{-\log_{10}(p)} CSS score, matching the published figures. \code{"zbar"}
 averages the mean z instead and re-derives a p-value from the smoothed
 value, which is not what the papers plot but is available for users who
 prefer it.}
 
 \item{cols}{Optional character vector of additional columns to smooth, for
 example the constituent tests, for side-by-side comparison. Smoothed
-columns are suffixed `_smooth`.}
+columns are suffixed \verb{_smooth}.}
 
-\item{.copy}{If `TRUE`, work on a copy and leave `x` untouched.}
+\item{.copy}{If \code{TRUE}, work on a copy and leave \code{x} untouched.}
 }
 \value{
-`x` with `css_smooth` and `n_window` added, plus one `<col>_smooth`
-  column for each entry of `cols`.
+\code{x} with \code{css_smooth} and \code{n_window} added, plus one \verb{<col>_smooth}
+column for each entry of \code{cols}. For a reciprocal result the smoothed
+columns are \code{css_pos_smooth}, \code{css_neg_smooth} and \code{css_signed_smooth}.
 }
 \description{
-Averages a score over a window of fixed *physical* width centred on each SNP,
+Averages a score over a window of fixed \emph{physical} width centred on each SNP,
 as in both source papers: Randhawa et al. (2014) describe 1 Mb windows
 centred at each SNP, and Randhawa et al. (2015) describe averaging 0.5 Mb on
 each side, which is the same window. Smoothing suppresses single-SNP noise
@@ -48,15 +49,21 @@ and exploits the fact that hitchhiking makes true signals cluster.
 }
 \details{
 Windows never span a chromosome boundary. Windows containing fewer than
-`min_snps` SNPs are returned as `NA` and are excluded from thresholding and
+\code{min_snps} SNPs are returned as \code{NA} and are excluded from thresholding and
 region calling; Randhawa et al. (2014) prune such low-density windows for the
 same reason.
 
-The implementation is vectorised with [findInterval()] and [cumsum()] per
+The implementation is vectorised with \code{\link[=findInterval]{findInterval()}} and \code{\link[=cumsum]{cumsum()}} per
 chromosome, so cost does not grow with window width.
-[data.table::frollmean()] is deliberately not used: it windows by *row
-count*, whereas CSS windows are defined by base-pair distance over
+\code{\link[data.table:frollmean]{data.table::frollmean()}} is deliberately not used: it windows by \emph{row
+count}, whereas CSS windows are defined by base-pair distance over
 irregularly spaced SNPs.
+
+A reciprocal result from \code{\link[=css_reciprocal]{css_reciprocal()}} carries two directed scores
+rather than one \code{css} column, so both are smoothed: \code{css_pos_smooth},
+\code{css_neg_smooth} and their difference \code{css_signed_smooth} are added, and
+\code{\link[=css_manhattan_mirror]{css_manhattan_mirror()}} then plots the smoothed scores by default.
+\code{on = "zbar"} is not available in that case.
 }
 \examples{
 data(css_sim_small)

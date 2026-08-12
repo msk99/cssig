@@ -14,54 +14,54 @@ css_input(
 )
 }
 \arguments{
-\item{data}{A `data.frame`, `tibble`, `data.table` or matrix with one row
+\item{data}{A \code{data.frame}, \code{tibble}, \code{data.table} or matrix with one row
 per SNP.}
 
 \item{chr, pos}{Column names holding the chromosome and the base-pair
 position.}
 
-\item{snp}{Optional column name holding a SNP identifier. If `NULL`, a
-column named `snp` is used when present; failing that, an identifier of the
-form `"chr:pos"` is generated.}
+\item{snp}{Optional column name holding a SNP identifier. If \code{NULL}, a
+column named \code{snp} is used when present; failing that, an identifier of the
+form \code{"chr:pos"} is generated.}
 
 \item{tests}{A named character vector mapping column names to directions,
-for example `c(fst = "high", xpehh = "high", ddaf = "high")`. Names are the
-columns of `data`; values are one of `"high"`, `"low"` or `"abs"`.}
+for example \code{c(fst = "high", xpehh = "high", ddaf = "high")}. Names are the
+columns of \code{data}; values are one of \code{"high"}, \code{"low"} or \code{"abs"}.}
 
 \item{drop_na_pos}{Drop rows with a missing chromosome or position.
-Default `TRUE`.}
+Default \code{TRUE}.}
 }
 \value{
-A [data.table::data.table] of class `css_input`, keyed on
-  `(chr, pos)`, with `chr` stored as an ordered factor.
+A \link[data.table:data.table]{data.table::data.table} of class \code{css_input}, keyed on
+\verb{(chr, pos)}, with \code{chr} stored as an ordered factor.
 }
 \description{
 Validates a table of pre-computed constituent selection-test statistics and
-prepares it for [css()]. One row per SNP; one column per constituent test.
+prepares it for \code{\link[=css]{css()}}. One row per SNP; one column per constituent test.
 }
 \section{Reference semantics}{
 
-`css_input()` takes a defensive [data.table::copy()] of `data`, so the object
+\code{css_input()} takes a defensive \code{\link[data.table:copy]{data.table::copy()}} of \code{data}, so the object
 you pass in is never modified. From that point on the pipeline stages
-([css()], [css_smooth()], [css_threshold()], [css_fdr()]) add columns *by
-reference* to the object `css_input()` returned, which avoids copying large
+(\code{\link[=css]{css()}}, \code{\link[=css_smooth]{css_smooth()}}, \code{\link[=css_threshold]{css_threshold()}}, \code{\link[=css_fdr]{css_fdr()}}) add columns \emph{by
+reference} to the object \code{css_input()} returned, which avoids copying large
 tables between stages. Each stage also returns the object, so both the piped
-and the in-place idiom work. Pass `.copy = TRUE` to a stage to get a copy
-instead. See `vignette("cssig")`.
+and the in-place idiom work. Pass \code{.copy = TRUE} to a stage to get a copy
+instead. See \code{vignette("cssig")}.
 }
 
 \section{Direction}{
 
-CSS ranks every constituent test so that *larger means more evidence of
-selection*. `tests` records, per test, how to get there:
+CSS ranks every constituent test so that \emph{larger means more evidence of
+selection}. \code{tests} records, per test, how to get there:
 \describe{
-  \item{`"high"`}{Use as-is. Correct for \eqn{F_{ST}}, XP-EHH computed with
-    the selected population as the target, and \eqn{\Delta}DAF computed as
-    selected minus reference.}
-  \item{`"low"`}{Negate before ranking. For tests where small values
-    indicate selection, such as Tajima's D or a nucleotide-diversity ratio.}
-  \item{`"abs"`}{Use the absolute value. For a signed test used without
-    regard to direction.}
+\item{\code{"high"}}{Use as-is. Correct for \eqn{F_{ST}}, XP-EHH computed with
+the selected population as the target, and \eqn{\Delta}DAF computed as
+selected minus reference.}
+\item{\code{"low"}}{Negate before ranking. For tests where small values
+indicate selection, such as Tajima's D or a nucleotide-diversity ratio.}
+\item{\code{"abs"}}{Use the absolute value. For a signed test used without
+regard to direction.}
 }
 }
 
@@ -73,5 +73,5 @@ x
 
 }
 \seealso{
-[css()], [css_merge_tests()]
+\code{\link[=css]{css()}}, \code{\link[=css_merge_tests]{css_merge_tests()}}
 }

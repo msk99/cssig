@@ -36,7 +36,7 @@
 #' coalescent (\pkg{scrm}). Breeds are then formed by a forward Wright-Fisher
 #' simulation with recombination, run for 40 generations at an effective size of
 #' 150, during which the sweeps in [css_sim_truth] act. Eight breeds form the
-#' selected cohort and eight the reference cohort, with 20 animals sampled per
+#' selected cohort and eight the reference cohort, with 50 animals sampled per
 #' breed. SNPs are ascertained chip-style, by discovery in three breeds followed
 #' by thinning to roughly uniform spacing, which reproduces the shifted
 #' frequency spectrum of the BovineSNP50 data the source papers analyse.

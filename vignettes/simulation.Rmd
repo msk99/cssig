@@ -324,17 +324,6 @@ from the published method. Note in particular that whatever it does for the real
 sweeps, it does for the trap as well — `"abs"` discards information, and the
 information it discards was not helping distinguish selection from drift.
 
-## Sweep 6 in the mirrored view
-
-```{r}
-rev_dat <- copy(css_sim)
-rev_dat[, xpehh := -xpehh][, ddaf := -ddaf]
-fwd <- css_input(css_sim, tests = c(fst = "high", xpehh = "high", ddaf = "high"))
-rvs <- css_input(rev_dat,  tests = c(fst = "high", xpehh = "high", ddaf = "high"))
-recip <- css_reciprocal(fwd, rvs, labels = c("selected cohort", "reference cohort"))
-css_manhattan_mirror(recip)
-```
-
 ## Calibration under the null
 
 ```{r}

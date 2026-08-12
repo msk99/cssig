@@ -6,6 +6,7 @@
 \usage{
 css_manhattan_mirror(
   x,
+  score = c("smoothed", "raw"),
   top = 0.001,
   gap = 2e+07,
   point_size = 0.7,
@@ -15,15 +16,18 @@ css_manhattan_mirror(
 )
 }
 \arguments{
-\item{x}{A `css_result` from [css_reciprocal()].}
+\item{x}{A \code{css_result} from \code{\link[=css_reciprocal]{css_reciprocal()}}.}
 
-\item{top}{Upper tail fraction used for the two threshold lines.
-Default `0.001`.}
+\item{score}{Which scores to plot: \code{"smoothed"} (the default once
+\code{\link[=css_smooth]{css_smooth()}} has been run on the reciprocal result) or \code{"raw"}.}
 
-\item{gap, point_size, point_alpha, title, subtitle}{As for [css_manhattan()].}
+\item{top}{Upper tail fraction used for the two threshold lines, applied to
+each direction's own distribution of the plotted score. Default \code{0.001}.}
+
+\item{gap, point_size, point_alpha, title, subtitle}{As for \code{\link[=css_manhattan]{css_manhattan()}}.}
 }
 \value{
-A [ggplot2::ggplot] object.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 }
 \description{
 Reproduces Figure 2 of Randhawa et al. (2015): the two directions of a
@@ -37,6 +41,8 @@ fwd <- css_input(css_sim_small,
 rd <- data.table::copy(css_sim_small)
 rd$xpehh <- -rd$xpehh; rd$ddaf <- -rd$ddaf
 rvs <- css_input(rd, tests = c(fst = "high", xpehh = "high", ddaf = "high"))
-css_manhattan_mirror(css_reciprocal(fwd, rvs, labels = c("large", "small")))
+recip <- css_reciprocal(fwd, rvs, labels = c("large", "small"))
+css_manhattan_mirror(recip)              # raw scores
+css_manhattan_mirror(css_smooth(recip))  # smoothed, as the 2015 figure plots
 
 }

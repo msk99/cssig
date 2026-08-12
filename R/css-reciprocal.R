@@ -24,7 +24,9 @@
 #'
 #' @return A `css_result` keyed on `(chr, pos)` with columns `css_pos` (forward
 #'   direction), `css_neg` (reverse) and `css_signed`, the signed score
-#'   `css_pos - css_neg` used for mirrored plotting.
+#'   `css_pos - css_neg` used for mirrored plotting. `plot()` on the result
+#'   draws [css_manhattan_mirror()], and [css_smooth()] smooths both directions
+#'   (`css_pos_smooth`, `css_neg_smooth`, `css_signed_smooth`).
 #'
 #' @examples
 #' data(css_sim_small)

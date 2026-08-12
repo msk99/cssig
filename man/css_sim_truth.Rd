@@ -5,26 +5,26 @@
 \alias{css_sim_truth}
 \title{Known selection signatures in the simulated panel}
 \format{
-A [data.table::data.table] with one row per implanted signature:
+A \link[data.table:data.table]{data.table::data.table} with one row per implanted signature:
 \describe{
-  \item{sweep_id}{Identifier; `"trap"` marks the deliberate false positive.}
-  \item{chr, pos}{Location of the causal site.}
-  \item{scenario}{What kind of signature this is.}
-  \item{s}{Selection coefficient, additive with fitnesses
-    \eqn{1, 1+s/2, 1+s}.}
-  \item{p0}{Starting frequency; `NA` means a new mutation at \eqn{1/(2N_e)}.}
-  \item{target_freq}{Frequency the sweep was designed to reach.}
-  \item{cohort}{Which breeds were under selection.}
-  \item{selected}{`FALSE` for the trap, `TRUE` for genuine sweeps.}
-  \item{t_generations, ne_breed}{Duration and effective size of the forward
-    phase.}
+\item{sweep_id}{Identifier; \code{"trap"} marks the deliberate false positive.}
+\item{chr, pos}{Location of the causal site.}
+\item{scenario}{What kind of signature this is.}
+\item{s}{Selection coefficient, additive with fitnesses
+\eqn{1, 1+s/2, 1+s}.}
+\item{p0}{Starting frequency; \code{NA} means a new mutation at \eqn{1/(2N_e)}.}
+\item{target_freq}{Frequency the sweep was designed to reach.}
+\item{cohort}{Which breeds were under selection.}
+\item{selected}{\code{FALSE} for the trap, \code{TRUE} for genuine sweeps.}
+\item{t_generations, ne_breed}{Duration and effective size of the forward
+phase.}
 }
 }
 \usage{
 css_sim_truth
 }
 \description{
-The ground truth behind [css_sim]: where the sweeps are, how strong they
+The ground truth behind \link{css_sim}: where the sweeps are, how strong they
 were, and which cohort carried them. Because the answers are known, this
 supports genuine power and false-positive comparisons of CSS against its
 constituent tests.
@@ -41,7 +41,7 @@ intense artificial selection, not to slow natural selection.
 
 \section{The trap}{
 
-Row `"trap"` carries no selection at all. In four selected-cohort breeds the
+Row \code{"trap"} carries no selection at all. In four selected-cohort breeds the
 whole 40-45 Mb region of chromosome 5 descends from a single founder
 haplotype, which is what happens when a breed is founded from few animals. It
 produces elevated \eqn{F_{ST}} and long-range haplotype homozygosity through

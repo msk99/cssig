@@ -5,30 +5,30 @@
 \alias{css_sim}
 \title{Simulated multi-breed cattle panel with known selection signatures}
 \format{
-A [data.table::data.table] with one row per SNP:
+A \link[data.table:data.table]{data.table::data.table} with one row per SNP:
 \describe{
-  \item{chr}{Chromosome, an ordered factor with the 29 bovine autosomes.}
-  \item{pos}{Position in base pairs on a UMD3.1-shaped coordinate system.}
-  \item{snp}{SNP identifier.}
-  \item{ancestral, derived}{Allele coding. The ancestral allele is known
-    exactly, because the simulation records it.}
-  \item{maf}{Minor allele frequency across the whole panel.}
-  \item{daf_selected, daf_reference}{Derived allele frequency in each cohort.}
-  \item{fst}{Weir & Cockerham \eqn{F_{ST}} between the cohorts, from
-    [css_fst()].}
-  \item{xpehh}{Cross-population extended haplotype homozygosity, selected
-    against reference, computed with \pkg{rehh} and standardised.}
-  \item{ddaf}{Standardised \eqn{\Delta}DAF, from [css_ddaf()].}
-  \item{dsaf}{Standardised \eqn{\Delta}SAF, from [css_dsaf()]. Provided so
-    that the ancestral-allele-free route of Randhawa et al. (2014) can be
-    compared against \eqn{\Delta}DAF on the same data.}
+\item{chr}{Chromosome, an ordered factor with the 29 bovine autosomes.}
+\item{pos}{Position in base pairs on a UMD3.1-shaped coordinate system.}
+\item{snp}{SNP identifier.}
+\item{ancestral, derived}{Allele coding. The ancestral allele is known
+exactly, because the simulation records it.}
+\item{maf}{Minor allele frequency across the whole panel.}
+\item{daf_selected, daf_reference}{Derived allele frequency in each cohort.}
+\item{fst}{Weir & Cockerham \eqn{F_{ST}} between the cohorts, from
+\code{\link[=css_fst]{css_fst()}}.}
+\item{xpehh}{Cross-population extended haplotype homozygosity, selected
+against reference, computed with \pkg{rehh} and standardised.}
+\item{ddaf}{Standardised \eqn{\Delta}DAF, from \code{\link[=css_ddaf]{css_ddaf()}}.}
+\item{dsaf}{Standardised \eqn{\Delta}SAF, from \code{\link[=css_dsaf]{css_dsaf()}}. Provided so
+that the ancestral-allele-free route of Randhawa et al. (2014) can be
+compared against \eqn{\Delta}DAF on the same data.}
 }
 }
 \usage{
 css_sim
 }
 \description{
-**These data are simulated. They describe no real animal, breed or genome.**
+\strong{These data are simulated. They describe no real animal, breed or genome.}
 }
 \details{
 Constituent selection statistics for a simulated multi-breed cattle panel,
@@ -46,8 +46,8 @@ Sixteen breeds descend from a common ancestral population that passes
 through a domestication bottleneck, simulated with the sequentially-Markovian
 coalescent (\pkg{scrm}). Breeds are then formed by a forward Wright-Fisher
 simulation with recombination, run for 40 generations at an effective size of
-150, during which the sweeps in [css_sim_truth] act. Eight breeds form the
-selected cohort and eight the reference cohort, with 20 animals sampled per
+150, during which the sweeps in \link{css_sim_truth} act. Eight breeds form the
+selected cohort and eight the reference cohort, with 50 animals sampled per
 breed. SNPs are ascertained chip-style, by discovery in three breeds followed
 by thinning to roughly uniform spacing, which reproduces the shifted
 frequency spectrum of the BovineSNP50 data the source papers analyse.
@@ -60,7 +60,7 @@ the whole region rather than at the sweep.
 The causal variants themselves are excluded from the panel, as they would be
 on a real SNP chip; the signal comes from hitchhiking neighbours.
 
-Full parameters and the generating scripts are in `data-raw/` in the package
+Full parameters and the generating scripts are in \verb{data-raw/} in the package
 source.
 }
 
@@ -69,7 +69,7 @@ data(css_sim)
 str(css_sim)
 }
 \seealso{
-[css_sim_truth] for the known answers, [css_sim_small] for a subset
-  sized for quick examples.
+\link{css_sim_truth} for the known answers, \link{css_sim_small} for a subset
+sized for quick examples.
 }
 \keyword{datasets}

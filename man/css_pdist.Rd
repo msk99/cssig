@@ -7,14 +7,14 @@
 css_pdist(x, bins = 50L, title = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A `css_result`.}
+\item{x}{A \code{css_result}.}
 
-\item{bins}{Number of histogram bins. Default `50`.}
+\item{bins}{Number of histogram bins. Default \code{50}.}
 
 \item{title, subtitle}{Plot labels.}
 }
 \value{
-A [ggplot2::ggplot] object.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 }
 \description{
 Histogram of CSS p-values

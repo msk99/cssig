@@ -13,23 +13,23 @@ css(
 )
 }
 \arguments{
-\item{x}{A `css_input` object from [css_input()].}
+\item{x}{A \code{css_input} object from \code{\link[=css_input]{css_input()}}.}
 
 \item{ties}{Tie-handling for the rank step, passed to
-[data.table::frank()]: one of `"average"`, `"first"`, `"random"`,
-`"dense"`.}
+\code{\link[data.table:frank]{data.table::frank()}}: one of \code{"average"}, \code{"first"}, \code{"random"},
+\code{"dense"}.}
 
-\item{na_action}{`"pairwise"` (default) or `"omit"`; see Details.}
+\item{na_action}{\code{"pairwise"} (default) or \code{"omit"}; see Details.}
 
 \item{weights}{Optional numeric vector of per-test weights, one per test.
-`NULL` (default) gives the equally weighted mean of the papers.}
+\code{NULL} (default) gives the equally weighted mean of the papers.}
 
-\item{.copy}{If `TRUE`, work on a copy and leave `x` untouched. Default
-`FALSE`, which adds the result columns to `x` by reference.}
+\item{.copy}{If \code{TRUE}, work on a copy and leave \code{x} untouched. Default
+\code{FALSE}, which adds the result columns to \code{x} by reference.}
 }
 \value{
-`x`, with columns `zbar`, `p` and `css` added, classed
-  `css_result`.
+\code{x}, with columns \code{zbar}, \code{p} and \code{css} added, classed
+\code{css_result}.
 }
 \description{
 The core CSS statistic of Randhawa et al. (2014, 2015). For each constituent
@@ -49,7 +49,7 @@ since \eqn{\bar{Z}_j \sim N(0, m^{-1})} under the null.
 }
 \section{CSS is rank-based}{
 
-Only the *order* of each constituent test matters. Standardising XP-EHH or
+Only the \emph{order} of each constituent test matters. Standardising XP-EHH or
 \eqn{\Delta}DAF to \eqn{N(0,1)}, as both source papers do, leaves CSS exactly
 unchanged; it matters only for plotting the constituent tests on a common
 axis. Equally, any strictly increasing transformation of a constituent test
@@ -59,22 +59,22 @@ gives identical CSS.
 \section{Deviations from the published method}{
 
 Two situations the papers do not specify are handled explicitly, and both
-defaults are flagged by [print.css_result()] when they are in use:
+defaults are flagged by the \code{print()} method when they are in use:
 \describe{
-  \item{Ties}{`ties = "average"` by default. Statistics computed from allele
-    counts are discrete, so ties are normal and harmless. What is not
-    harmless is a single value shared by a large block of SNPs, such as
-    \eqn{F_{ST} = 0} wherever a cohort is monomorphic: that block collapses
-    to one averaged rank. A warning fires when any one value covers more
-    than 5\% of a test.}
-  \item{Missing values}{`na_action = "pairwise"` averages over the tests
-    available at each SNP and uses that SNP's own \eqn{m} in the p-value.
-    This is an extension: a SNP scored by fewer tests is not strictly
-    comparable to one scored by all of them. Use `"omit"` for the strict
-    complete-case behaviour of the papers.}
+\item{Ties}{\code{ties = "average"} by default. Statistics computed from allele
+counts are discrete, so ties are normal and harmless. What is not
+harmless is a single value shared by a large block of SNPs, such as
+\eqn{F_{ST} = 0} wherever a cohort is monomorphic: that block collapses
+to one averaged rank. A warning fires when any one value covers more
+than 5\% of a test.}
+\item{Missing values}{\code{na_action = "pairwise"} averages over the tests
+available at each SNP and uses that SNP's own \eqn{m} in the p-value.
+This is an extension: a SNP scored by fewer tests is not strictly
+comparable to one scored by all of them. Use \code{"omit"} for the strict
+complete-case behaviour of the papers.}
 }
-Non-`NULL` `weights` give a Stouffer-style weighted mean z, which is *not*
-the published method; the default `NULL` reproduces the papers exactly.
+Non-\code{NULL} \code{weights} give a Stouffer-style weighted mean z, which is \emph{not}
+the published method; the default \code{NULL} reproduces the papers exactly.
 }
 
 \examples{
@@ -88,14 +88,14 @@ head(res)
 \references{
 Randhawa IAS, Khatkar MS, Thomson PC, Raadsma HW (2014).
 Composite selection signals can localize the trait specific genomic regions
-in multi-breed populations of cattle and sheep. *BMC Genetics* 15:34.
+in multi-breed populations of cattle and sheep. \emph{BMC Genetics} 15:34.
 \doi{10.1186/1471-2156-15-34}
 
 Randhawa IAS, Khatkar MS, Thomson PC, Raadsma HW (2015).
 Composite selection signals for complex traits exemplified through bovine
-stature using multibreed cohorts of European and African *Bos taurus*.
-*G3* 5:1391-1401. \doi{10.1534/g3.115.017772}
+stature using multibreed cohorts of European and African \emph{Bos taurus}.
+\emph{G3} 5:1391-1401. \doi{10.1534/g3.115.017772}
 }
 \seealso{
-[css_smooth()], [css_threshold()], [css_regions()]
+\code{\link[=css_smooth]{css_smooth()}}, \code{\link[=css_threshold]{css_threshold()}}, \code{\link[=css_regions]{css_regions()}}
 }

@@ -1,14 +1,14 @@
 #' Apply an empirical significance threshold to CSS scores
 #'
 #' Both source papers declare SNPs significant when their score falls in the top
-#' 0.1\% of the genome-wide empirical distribution, rather than referring to any
+#' 0.1% of the genome-wide empirical distribution, rather than referring to any
 #' theoretical null. This computes that threshold and flags the SNPs above it.
 #'
 #' @param x A `css_result`, normally after [css_smooth()].
 #' @param top Upper tail fraction to declare significant. Default `0.001`
-#'   (top 0.1\%), as used in both papers.
+#'   (top 0.1%), as used in both papers.
 #' @param top2 A second, more permissive fraction used by the `"flank"` region
-#'   caller of [css_regions()]. Default `0.01` (top 1\%).
+#'   caller of [css_regions()]. Default `0.01` (top 1%).
 #' @param on Which score to threshold: `"smoothed"` (default) or `"raw"`.
 #' @param .copy If `TRUE`, work on a copy and leave `x` untouched.
 #'

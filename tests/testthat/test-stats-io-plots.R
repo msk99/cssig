@@ -81,6 +81,27 @@ test_that("reciprocal CSS is antisymmetric when the tests are mirrored", {
                "same SNPs")
 })
 
+test_that("reciprocal results smooth and plot through the standard generics", {
+  set.seed(12)
+  n <- 400L
+  d <- data.frame(chr = "1", pos = seq_len(n) * 1e5,
+                  fst = runif(n), xpehh = rnorm(n), ddaf = rnorm(n))
+  fwd <- css_input(d, tests = c(fst = "high", xpehh = "high", ddaf = "high"))
+  d2 <- d; d2$xpehh <- -d2$xpehh; d2$ddaf <- -d2$ddaf
+  rvs <- css_input(d2, tests = c(fst = "high", xpehh = "high", ddaf = "high"))
+  r <- css_reciprocal(fwd, rvs, labels = c("A", "B"))
+
+  expect_s3_class(plot(r), "ggplot")                       # dispatches to the mirror
+  expect_error(css_manhattan(r), "css_manhattan_mirror")   # helpful redirect
+  expect_error(css_smooth(r, on = "zbar"), "reciprocal")
+
+  r <- css_smooth(r)
+  expect_true(all(c("css_pos_smooth", "css_neg_smooth", "css_signed_smooth") %in% names(r)))
+  expect_equal(r$css_signed_smooth, r$css_pos_smooth - r$css_neg_smooth)
+  expect_s3_class(css_manhattan_mirror(r), "ggplot")            # smoothed by default
+  expect_s3_class(css_manhattan_mirror(r, score = "raw"), "ggplot")
+})
+
 test_that("rehh output is coerced correctly", {
   fake <- data.frame(CHR = 1, POSITION = c(100, 200), XPEHH_A_B = c(1.2, -0.4))
   out <- read_rehh_xpehh(fake)
@@ -115,6 +136,30 @@ test_that("plot functions return ggplot objects", {
   expect_s3_class(css_pdist(res), "ggplot")
   expect_s3_class(css_test_cor(res), "ggplot")
   expect_error(css_chrom_plot(res, chr = "99"), "not found")
+})
+
+test_that("css_region_plot accepts plain region specs and keeps genes in one panel", {
+  set.seed(14)
+  n <- 300L
+  d <- data.frame(chr = "1", pos = seq_len(n) * 1e4,
+                  fst = runif(n), xpehh = rnorm(n), ddaf = rnorm(n))
+  res <- suppressMessages(
+    css_threshold(css_smooth(css(css_input(d, tests = c(fst = "high", xpehh = "high", ddaf = "high")))))
+  )
+
+  # a named vector is documented as a valid region spec
+  expect_s3_class(css_region_plot(res, region = c(chr = "1", start = 4e5, end = 1.2e6)),
+                  "ggplot")
+
+  genes <- data.frame(start = 5e5, end = 9e5, name = "GENE1")
+  p <- css_region_plot(res, region = list(chr = "1", start = 4e5, end = 1.2e6),
+                       genes = genes)
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(nrow(b$layout$layout), 5L)   # CSS + three tests + Genes
+  seg <- which(vapply(p$layers, function(l) inherits(l$geom, "GeomSegment"), logical(1)))
+  expect_length(seg, 1L)
+  # the gene track must live in exactly one facet, not repeat across all of them
+  expect_equal(length(unique(b$data[[seg]]$PANEL)), 1L)
 })
 
 test_that("genome coordinates are monotone and label every chromosome once", {

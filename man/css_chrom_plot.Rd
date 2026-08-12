@@ -16,23 +16,23 @@ css_chrom_plot(
 )
 }
 \arguments{
-\item{x}{A `css_result`.}
+\item{x}{A \code{css_result}.}
 
-\item{chr}{Chromosome to plot. A single value matching a level of `x$chr`.}
+\item{chr}{Chromosome to plot. A single value matching a level of \code{x$chr}.}
 
 \item{highlight}{Optional named numeric vector of positions to mark, for
-example `c(MSTN = 6213566)`. Names are used as labels.}
+example \code{c(MSTN = 6213566)}. Names are used as labels.}
 
 \item{xlim}{Optional length-2 numeric giving a position range in base pairs.}
 
-\item{units}{Axis units for position: `"Mb"` (default), `"kb"` or `"bp"`.}
+\item{units}{Axis units for position: \code{"Mb"} (default), \code{"kb"} or \code{"bp"}.}
 
-\item{show_raw}{Draw the unsmoothed per-SNP scores. Default `TRUE`.}
+\item{show_raw}{Draw the unsmoothed per-SNP scores. Default \code{TRUE}.}
 
 \item{title, subtitle}{Plot labels.}
 }
 \value{
-A [ggplot2::ggplot] object.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 }
 \description{
 Reproduces Figure 1 of Randhawa et al. (2014): raw CSS scores as points with

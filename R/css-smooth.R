@@ -18,8 +18,14 @@
 #' count*, whereas CSS windows are defined by base-pair distance over
 #' irregularly spaced SNPs.
 #'
-#' @param x A `css_result` from [css()], or any keyed table with `chr`, `pos`
-#'   and the columns named in `cols`.
+#' A reciprocal result from [css_reciprocal()] carries two directed scores
+#' rather than one `css` column, so both are smoothed: `css_pos_smooth`,
+#' `css_neg_smooth` and their difference `css_signed_smooth` are added, and
+#' [css_manhattan_mirror()] then plots the smoothed scores by default.
+#' `on = "zbar"` is not available in that case.
+#'
+#' @param x A `css_result` from [css()] or [css_reciprocal()], or any keyed
+#'   table with `chr`, `pos` and the columns named in `cols`.
 #' @param half_width Half the window width in base pairs. Default `5e5`, giving
 #'   the 1 Mb window of the papers.
 #' @param min_snps Minimum number of SNPs in a window for it to be retained.
@@ -35,7 +41,8 @@
 #' @param .copy If `TRUE`, work on a copy and leave `x` untouched.
 #'
 #' @return `x` with `css_smooth` and `n_window` added, plus one `<col>_smooth`
-#'   column for each entry of `cols`.
+#'   column for each entry of `cols`. For a reciprocal result the smoothed
+#'   columns are `css_pos_smooth`, `css_neg_smooth` and `css_signed_smooth`.
 #'
 #' @examples
 #' data(css_sim_small)
@@ -55,14 +62,21 @@ css_smooth <- function(x,
   if (!is.numeric(half_width) || length(half_width) != 1L || half_width <= 0) {
     .stopf("`half_width` must be a single positive number of base pairs.")
   }
-  .require_col(x, c("chr", "pos", on), "css_smooth")
+  # A reciprocal result has no single score column; smooth both directions.
+  recip <- !is.null(attr(x, "css_reciprocal"))
+  if (recip && on == "zbar") {
+    .stopf("`on = \"zbar\"` is not available for a reciprocal result; its directed scores are already -log10(p).")
+  }
+  primary <- if (recip) "css_pos" else on
+  .require_col(x, c("chr", "pos", if (recip) c("css_pos", "css_neg") else on),
+               "css_smooth")
 
   x <- .maybe_copy(x, .copy)
   if (!data.table::haskey(x) || !identical(data.table::key(x), c("chr", "pos"))) {
     data.table::setkeyv(x, c("chr", "pos"))
   }
 
-  target <- c(on, cols)
+  target <- c(if (recip) c("css_pos", "css_neg") else on, cols)
   missing_cols <- setdiff(target, names(x))
   if (length(missing_cols)) {
     .stopf("Column%s to smooth not found: %s.",
@@ -70,11 +84,13 @@ css_smooth <- function(x,
            paste0("`", missing_cols, "`", collapse = ", "))
   }
 
+  out_name_for <- function(cl) {
+    if (!recip && identical(cl, on)) "css_smooth" else paste0(cl, "_smooth")
+  }
   for (cl in target) {
-    out_name <- if (identical(cl, on)) "css_smooth" else paste0(cl, "_smooth")
     res <- x[, .window_mean(pos, get(cl), half_width), by = chr]
-    data.table::set(x, j = out_name, value = res$mean)
-    if (identical(cl, on)) data.table::set(x, j = "n_window", value = res$n)
+    data.table::set(x, j = out_name_for(cl), value = res$mean)
+    if (identical(cl, primary)) data.table::set(x, j = "n_window", value = res$n)
   }
 
   # Prune sparse windows. Done once, on the window count from the primary
@@ -83,15 +99,16 @@ css_smooth <- function(x,
     sparse <- which(x$n_window < min_snps)
     if (length(sparse)) {
       for (cl in target) {
-        out_name <- if (identical(cl, on)) "css_smooth" else paste0(cl, "_smooth")
-        data.table::set(x, i = sparse, j = out_name, value = NA_real_)
+        data.table::set(x, i = sparse, j = out_name_for(cl), value = NA_real_)
       }
       .msgf("Masked %d of %d windows (%s) containing fewer than %d SNPs.",
             length(sparse), nrow(x), .pct(length(sparse) / nrow(x)), min_snps)
     }
   }
 
-  if (on == "zbar") {
+  if (recip) {
+    x[, css_signed_smooth := css_pos_smooth - css_neg_smooth]
+  } else if (on == "zbar") {
     m <- attr(x, "css_call")$m
     if (!is.null(m)) {
       x[, css_smooth := -log10(stats::pnorm(sqrt(m) * css_smooth, lower.tail = FALSE))]

@@ -21,38 +21,38 @@ css_manhattan(
 )
 }
 \arguments{
-\item{x}{A `css_result`. If [css_threshold()] has been run the threshold line
+\item{x}{A \code{css_result}. If \code{\link[=css_threshold]{css_threshold()}} has been run the threshold line
 is drawn automatically.}
 
-\item{score}{Which score to plot: `"smoothed"` (default when available) or
-`"raw"`.}
+\item{score}{Which score to plot: \code{"smoothed"} (default when available) or
+\code{"raw"}.}
 
 \item{overlay_raw}{Draw the raw per-SNP scores behind the smoothed line, as
-in Figure 1 of the 2014 paper. Only meaningful when `score = "smoothed"`.}
+in Figure 1 of the 2014 paper. Only meaningful when \code{score = "smoothed"}.}
 
-\item{regions}{Optional `css_regions` object; significant regions are
-highlighted and, if `label` is set, annotated.}
+\item{regions}{Optional \code{css_regions} object; significant regions are
+highlighted and, if \code{label} is set, annotated.}
 
-\item{label}{Optional column name in `regions` to use as a text label, for
+\item{label}{Optional column name in \code{regions} to use as a text label, for
 example a gene name column the user has added.}
 
-\item{thin}{Drop a random subset of points below `thin_below` to keep
+\item{thin}{Drop a random subset of points below \code{thin_below} to keep
 rendering fast on very dense data. Off by default so that nothing is hidden
 without the user asking.}
 
-\item{thin_below}{CSS value under which thinning applies. Default `1`.}
+\item{thin_below}{CSS value under which thinning applies. Default \code{1}.}
 
-\item{thin_frac}{Fraction of low points to keep when thinning. Default `0.1`.}
+\item{thin_frac}{Fraction of low points to keep when thinning. Default \code{0.1}.}
 
 \item{gap}{Gap between chromosomes in base pairs, passed to
-[css_genome_coords()].}
+\code{\link[=css_genome_coords]{css_genome_coords()}}.}
 
 \item{point_size, point_alpha}{Point aesthetics.}
 
 \item{title, subtitle}{Plot labels.}
 }
 \value{
-A [ggplot2::ggplot] object.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 }
 \description{
 Reproduces the layout of Figure 3 of Randhawa et al. (2014): CSS against

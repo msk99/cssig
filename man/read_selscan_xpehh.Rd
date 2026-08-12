@@ -12,16 +12,16 @@ read_selscan_xpehh(file, chr, normalised = NULL)
 \item{chr}{Chromosome label to attach. selscan output covers one chromosome
 and does not record which, so this must be supplied.}
 
-\item{normalised}{Set `TRUE` when reading a `.norm` file, which carries the
-extra `normxpehh` and `crit` columns. If `NULL` (default) the format is
+\item{normalised}{Set \code{TRUE} when reading a \code{.norm} file, which carries the
+extra \code{normxpehh} and \code{crit} columns. If \code{NULL} (default) the format is
 detected from the header.}
 }
 \value{
-A [data.table::data.table] with `chr`, `pos`, `snp` and `xpehh`.
+A \link[data.table:data.table]{data.table::data.table} with \code{chr}, \code{pos}, \code{snp} and \code{xpehh}.
 }
 \description{
-Reads a selscan `.xpehh.out` file, or the normalised `.xpehh.out.norm`
-produced by `norm`, into the shape [css_input()] expects.
+Reads a selscan \code{.xpehh.out} file, or the normalised \code{.xpehh.out.norm}
+produced by \code{norm}, into the shape \code{\link[=css_input]{css_input()}} expects.
 }
 \examples{
 f <- system.file("extdata", "example.xpehh.out", package = "cssig")

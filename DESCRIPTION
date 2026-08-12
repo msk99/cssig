@@ -1,7 +1,7 @@
 Package: cssig
 Type: Package
 Title: Composite Selection Signals for Detecting Signatures of Selection
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: c(
     person("Mehar Singh", "Khatkar", email = "mehar.khatkar@adelaide.edu.au",
            role = c("aut", "cre")))
@@ -40,6 +40,7 @@ Suggests:
     vdiffr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
 URL: https://github.com/msk99/cssig
 BugReports: https://github.com/msk99/cssig/issues
 Config/roxygen2/version: 8.0.0

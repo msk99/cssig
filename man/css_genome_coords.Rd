@@ -11,12 +11,12 @@ css_genome_coords(chr, pos, gap = 2e+07)
 
 \item{pos}{Positions within chromosome.}
 
-\item{gap}{Gap in base pairs inserted between chromosomes. Default `2e7`.}
+\item{gap}{Gap in base pairs inserted between chromosomes. Default \code{2e7}.}
 }
 \value{
-A list with `pos_cum` (numeric vector aligned to the inputs),
-  `axis` (a `data.table` of chromosome label and tick midpoint) and
-  `bounds` (chromosome start offsets).
+A list with \code{pos_cum} (numeric vector aligned to the inputs),
+\code{axis} (a \code{data.table} of chromosome label and tick midpoint) and
+\code{bounds} (chromosome start offsets).
 }
 \description{
 Converts per-chromosome positions to a single running coordinate, and returns

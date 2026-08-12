@@ -24,14 +24,14 @@
 #'
 #' @section Deviations from the published method:
 #' Two situations the papers do not specify are handled explicitly, and both
-#' defaults are flagged by [print.css_result()] when they are in use:
+#' defaults are flagged by the `print()` method when they are in use:
 #' \describe{
 #'   \item{Ties}{`ties = "average"` by default. Statistics computed from allele
 #'     counts are discrete, so ties are normal and harmless. What is not
 #'     harmless is a single value shared by a large block of SNPs, such as
 #'     \eqn{F_{ST} = 0} wherever a cohort is monomorphic: that block collapses
 #'     to one averaged rank. A warning fires when any one value covers more
-#'     than 5\% of a test.}
+#'     than 5% of a test.}
 #'   \item{Missing values}{`na_action = "pairwise"` averages over the tests
 #'     available at each SNP and uses that SNP's own \eqn{m} in the p-value.
 #'     This is an extension: a SNP scored by fewer tests is not strictly

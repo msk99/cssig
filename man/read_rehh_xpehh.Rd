@@ -7,20 +7,20 @@
 read_rehh_xpehh(x, value = c("XPEHH", "LOGPVALUE"))
 }
 \arguments{
-\item{x}{A data frame from `rehh::ies2xpehh()`.}
+\item{x}{A data frame from \code{rehh::ies2xpehh()}.}
 
-\item{value}{Which column to use: `"XPEHH"` (default) picks the log-ratio
+\item{value}{Which column to use: \code{"XPEHH"} (default) picks the log-ratio
 column, whose exact name depends on the population labels and on whether
-`ies2xpehh(standardize = )` was `TRUE` (`XPEHH_a_b`) or `FALSE`
-(`UNXPEHH_a_b`); both spellings are recognised. `"LOGPVALUE"` uses rehh's
+\code{ies2xpehh(standardize = )} was \code{TRUE} (\code{XPEHH_a_b}) or \code{FALSE}
+(\code{UNXPEHH_a_b}); both spellings are recognised. \code{"LOGPVALUE"} uses rehh's
 -log10(p) column instead.}
 }
 \value{
-A [data.table::data.table] with `chr`, `pos`, `snp` and `xpehh`.
+A \link[data.table:data.table]{data.table::data.table} with \code{chr}, \code{pos}, \code{snp} and \code{xpehh}.
 }
 \description{
-Takes the data frame returned by [rehh::ies2xpehh()] and renames its columns
-to the shape [css_input()] expects.
+Takes the data frame returned by \code{\link[rehh:ies2xpehh]{rehh::ies2xpehh()}} and renames its columns
+to the shape \code{\link[=css_input]{css_input()}} expects.
 }
 \examples{
 fake <- data.frame(CHR = 1, POSITION = c(100, 200),

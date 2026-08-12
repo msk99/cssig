@@ -7,7 +7,7 @@
 \method{summary}{css_result}(object, ...)
 }
 \arguments{
-\item{object}{A `css_result`.}
+\item{object}{A \code{css_result}.}
 
 \item{...}{Unused.}
 }

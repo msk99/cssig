@@ -100,7 +100,7 @@ css_chrom_plot <- function(x, chr, highlight = NULL, xlim = NULL,
 #' @param smooth Draw the smoothed track for each test where available.
 #'   Default `TRUE`.
 #' @param genes Optional `data.frame` with `start`, `end` and `name` columns,
-#'   drawn as a gene track.
+#'   drawn as a gene track in its own bottom panel, with `name` as the label.
 #' @param units Axis units: `"Mb"` (default), `"kb"` or `"bp"`.
 #' @param title Plot title.
 #'
@@ -121,9 +121,14 @@ css_region_plot <- function(x, region, pad = 5e5, tests = NULL,
   units <- match.arg(units)
   div <- switch(units, Mb = 1e6, kb = 1e3, bp = 1)
 
-  rchr <- as.character(region$chr[1])
-  rstart <- as.numeric(region$start[1])
-  rend <- as.numeric(region$end[1])
+  # `[[` rather than `$`, so a named vector works as documented, not only a
+  # list or a css_regions row.
+  if (!all(c("chr", "start", "end") %in% names(region))) {
+    .stopf("`region` must supply `chr`, `start` and `end`.")
+  }
+  rchr <- as.character(region[["chr"]][1])
+  rstart <- as.numeric(region[["start"]][1])
+  rend <- as.numeric(region[["end"]][1])
   if (is.na(rchr) || is.na(rstart) || is.na(rend)) {
     .stopf("`region` must supply `chr`, `start` and `end`.")
   }
@@ -136,8 +141,19 @@ css_region_plot <- function(x, region, pad = 5e5, tests = NULL,
     as.character(chr) == rchr & pos >= (rstart - pad) & pos <= (rend + pad)]
   if (!nrow(d)) .stopf("No SNPs in the requested region.")
 
-  panels <- c("CSS", tests)
-  long <- data.table::rbindlist(lapply(panels, function(tc) {
+  # Genes overlapping the plotted range go in a facet of their own: drawn into
+  # the statistic panels they would repeat in every facet and drag each free
+  # y-scale down to the track's baseline.
+  gd <- NULL
+  if (!is.null(genes) && nrow(genes)) {
+    gd <- data.table::as.data.table(genes)[
+      start <= (rend + pad) & end >= (rstart - pad)]
+    if (!nrow(gd)) gd <- NULL
+  }
+
+  stat_panels <- c("CSS", tests)
+  panels <- c(stat_panels, if (!is.null(gd)) "Genes")
+  long <- data.table::rbindlist(lapply(stat_panels, function(tc) {
     val <- if (tc == "CSS") d$css else d[[tc]]
     sm_col <- if (tc == "CSS") "css_smooth" else paste0(tc, "_smooth")
     data.table::data.table(
@@ -153,6 +169,12 @@ css_region_plot <- function(x, region, pad = 5e5, tests = NULL,
   bands <- long[, .(ymin = min(value, na.rm = TRUE),
                     ymax = max(value, na.rm = TRUE)), by = test]
   bands[, `:=`(xmin = rstart / div, xmax = rend / div)]
+  if (!is.null(gd)) {
+    gd[, test := factor("Genes", levels = panels)]
+    bands <- rbind(bands, data.table::data.table(
+      test = factor("Genes", levels = panels),
+      ymin = -0.6, ymax = 1.6, xmin = rstart / div, xmax = rend / div))
+  }
 
   p <- ggplot2::ggplot(long, ggplot2::aes(x = x, y = value)) +
     ggplot2::geom_rect(
@@ -169,15 +191,17 @@ css_region_plot <- function(x, region, pad = 5e5, tests = NULL,
                                 linewidth = 0.6, na.rm = TRUE)
   }
 
-  if (!is.null(genes) && nrow(genes)) {
-    gd <- data.table::as.data.table(genes)
-    gd <- gd[start <= (rend + pad) & end >= (rstart - pad)]
-    if (nrow(gd)) {
-      gd[, `:=`(ybase = min(bands$ymin))]
-      p <- p + ggplot2::geom_segment(
+  if (!is.null(gd)) {
+    p <- p + ggplot2::geom_segment(
+      data = gd, inherit.aes = FALSE,
+      ggplot2::aes(x = start / div, xend = end / div),
+      y = 0, yend = 0, colour = "#1B7837", linewidth = 2
+    )
+    if ("name" %in% names(gd)) {
+      p <- p + ggplot2::geom_text(
         data = gd, inherit.aes = FALSE,
-        ggplot2::aes(x = start / div, xend = end / div, y = ybase, yend = ybase),
-        colour = "#1B7837", linewidth = 2
+        ggplot2::aes(x = (start + end) / 2 / div, label = name),
+        y = 1, size = 2.8, fontface = "italic", colour = "#1B7837"
       )
     }
   }

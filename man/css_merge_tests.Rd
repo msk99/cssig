@@ -14,30 +14,30 @@ css_merge_tests(
 )
 }
 \arguments{
-\item{...}{Two or more `data.frame`s or `data.table`s, ideally named
-(`fst = fst_table, xpehh = xpehh_table`). Each must contain the chromosome
-and position columns plus exactly one statistic column, unless `value` is
+\item{...}{Two or more \code{data.frame}s or \code{data.table}s, ideally named
+(\verb{fst = fst_table, xpehh = xpehh_table}). Each must contain the chromosome
+and position columns plus exactly one statistic column, unless \code{value} is
 given.}
 
 \item{chr, pos}{Column names for chromosome and position, recycled across all
 inputs.}
 
 \item{value}{Optional character vector naming the statistic column in each
-input. If `NULL`, each input must have exactly one column beyond `chr`,
-`pos` and `snp`.}
+input. If \code{NULL}, each input must have exactly one column beyond \code{chr},
+\code{pos} and \code{snp}.}
 
-\item{all}{If `TRUE` (default) keep the union of SNPs, leaving `NA` where a
-test is missing. If `FALSE` keep only SNPs scored by every test, which is
+\item{all}{If \code{TRUE} (default) keep the union of SNPs, leaving \code{NA} where a
+test is missing. If \code{FALSE} keep only SNPs scored by every test, which is
 the behaviour assumed in the source papers.}
 
 \item{quiet}{Suppress the merge report.}
 }
 \value{
-A [data.table::data.table] suitable for [css_input()].
+A \link[data.table:data.table]{data.table::data.table} suitable for \code{\link[=css_input]{css_input()}}.
 }
 \description{
 Constituent statistics usually come from different tools, on SNP sets that do
-not fully agree. This joins them on `(chr, pos)` and reports what each test
+not fully agree. This joins them on \verb{(chr, pos)} and reports what each test
 contributed, so that a silent loss of SNPs at the merge step becomes visible.
 }
 \examples{

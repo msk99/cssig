@@ -58,6 +58,18 @@ test_that("all input dialects give identical results", {
   expect_equal(a$css, c3$css)
 })
 
+test_that("factor columns are coerced through their labels, not their level codes", {
+  d <- make_df(20)
+  df <- d
+  df$pos <- factor(df$pos)
+  df$fst <- factor(df$fst)
+  a <- css(css_input(d, tests = tests3))
+  b <- css(css_input(df, tests = tests3))
+  expect_equal(b$pos, a$pos)
+  expect_equal(b$fst, a$fst)
+  expect_equal(b$css, a$css)
+})
+
 test_that("results do not depend on input row order", {
   d <- make_df()
   a <- css(css_input(d, tests = tests3))

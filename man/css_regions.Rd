@@ -14,27 +14,27 @@ css_regions(
 )
 }
 \arguments{
-\item{x}{A `css_result` that has been through [css_threshold()].}
+\item{x}{A \code{css_result} that has been through \code{\link[=css_threshold]{css_threshold()}}.}
 
-\item{method}{`"cluster"` (default) or `"flank"`; see Details.}
+\item{method}{\code{"cluster"} (default) or \code{"flank"}; see Details.}
 
-\item{min_snps}{Minimum significant SNPs per cluster for `"cluster"`.
-Default `3`.}
+\item{min_snps}{Minimum significant SNPs per cluster for \code{"cluster"}.
+Default \code{3}.}
 
-\item{min_flank}{Minimum adjoining top-`top2` SNPs for `"flank"`.
-Default `5`.}
+\item{min_flank}{Minimum adjoining top-\code{top2} SNPs for \code{"flank"}.
+Default \code{5}.}
 
 \item{merge_gap}{Maximum distance in base pairs between clusters that are
-merged into one region. Default `1e6`.}
+merged into one region. Default \code{1e6}.}
 
 \item{flank}{Padding in base pairs reported for gene mining.
-Default `5e5`.}
+Default \code{5e5}.}
 }
 \value{
-A [data.table::data.table] of class `css_regions`, one row per
-  region, with the peak SNP, span, SNP counts and, when the constituent tests
-  are present, the number of SNPs in each test's own top `top` fraction that
-  fall inside the region.
+A \link[data.table:data.table]{data.table::data.table} of class \code{css_regions}, one row per
+region, with the peak SNP, span, SNP counts and, when the constituent tests
+are present, the number of SNPs in each test's own top \code{top} fraction that
+fall inside the region.
 }
 \description{
 Groups significant SNPs into contiguous regions. Two rules are provided,
@@ -43,18 +43,18 @@ are available rather than silently blended.
 }
 \details{
 \describe{
-  \item{`method = "cluster"`}{Randhawa et al. (2014). A cluster of at least
-    `min_snps` significant SNPs (top 0.1\% of smoothed CSS) spanning a window
-    of `merge_gap` around the core SNP. Region boundaries are the first and
-    last significant SNP. Clusters closer than `merge_gap` are merged.}
-  \item{`method = "flank"`}{Randhawa et al. (2015). At least one SNP in the
-    top 0.1\%, flanked by at least `min_flank` adjoining SNPs in the top 1\%.
-    Boundaries are the first and last top-1\% SNP of the cluster. Clusters
-    closer than `merge_gap` are merged.}
+\item{\code{method = "cluster"}}{Randhawa et al. (2014). A cluster of at least
+\code{min_snps} significant SNPs (top 0.1\% of smoothed CSS) spanning a window
+of \code{merge_gap} around the core SNP. Region boundaries are the first and
+last significant SNP. Clusters closer than \code{merge_gap} are merged.}
+\item{\code{method = "flank"}}{Randhawa et al. (2015). At least one SNP in the
+top 0.1\%, flanked by at least \code{min_flank} adjoining SNPs in the top 1\%.
+Boundaries are the first and last top-1\% SNP of the cluster. Clusters
+closer than \code{merge_gap} are merged.}
 }
-Both papers additionally extend regions by 0.5 Mb on each side *for gene
-mining only*. That padding is reported in `start_padded` / `end_padded` and
-never applied to `start` / `end`, so region boundaries are not silently
+Both papers additionally extend regions by 0.5 Mb on each side \emph{for gene
+mining only}. That padding is reported in \code{start_padded} / \code{end_padded} and
+never applied to \code{start} / \code{end}, so region boundaries are not silently
 inflated.
 }
 \examples{

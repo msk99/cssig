@@ -10,7 +10,7 @@ css_dsaf(freq_selected, freq_reference, standardize = FALSE)
 \item{freq_selected, freq_reference}{Frequency of the same reference allele in
 each cohort.}
 
-\item{standardize}{Rescale to mean 0 and unit variance. See [css_ddaf()].}
+\item{standardize}{Rescale to mean 0 and unit variance. See \code{\link[=css_ddaf]{css_ddaf()}}.}
 }
 \value{
 Numeric vector of \eqn{\Delta}SAF values.
@@ -19,7 +19,7 @@ Numeric vector of \eqn{\Delta}SAF values.
 \eqn{\Delta}SAF, the ancestral-allele-free alternative to \eqn{\Delta}DAF
 introduced by Randhawa et al. (2014) for datasets where the ancestral allele
 cannot be inferred, such as their sheep panels. It is the frequency
-difference for the allele that is the *major* allele in the selected cohort.
+difference for the allele that is the \emph{major} allele in the selected cohort.
 }
 \examples{
 css_dsaf(c(0.8, 0.2, 0.5), c(0.3, 0.25, 0.5))

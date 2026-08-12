@@ -7,15 +7,15 @@
 css_qq(x, max_points = 50000L, title = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A `css_result`.}
+\item{x}{A \code{css_result}.}
 
 \item{max_points}{Thin to at most this many points for rendering. The
-smallest p-values are always kept. Default `50000`.}
+smallest p-values are always kept. Default \code{50000}.}
 
 \item{title, subtitle}{Plot labels.}
 }
 \value{
-A [ggplot2::ggplot] object.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 }
 \description{
 Under the null the CSS p-values should be uniform, so the points follow the

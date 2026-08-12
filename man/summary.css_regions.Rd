@@ -7,12 +7,12 @@
 \method{summary}{css_regions}(object, ...)
 }
 \arguments{
-\item{object}{A `css_regions` object.}
+\item{object}{A \code{css_regions} object.}
 
 \item{...}{Unused.}
 }
 \value{
-Invisibly, a `data.table` of the printed summary.
+Invisibly, a \code{data.table} of the printed summary.
 }
 \description{
 Prints the table in the shape of Table 2 of Randhawa et al. (2014): one row

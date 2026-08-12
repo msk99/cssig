@@ -7,12 +7,12 @@
 #' @details
 #' \describe{
 #'   \item{`method = "cluster"`}{Randhawa et al. (2014). A cluster of at least
-#'     `min_snps` significant SNPs (top 0.1\% of smoothed CSS) spanning a window
+#'     `min_snps` significant SNPs (top 0.1% of smoothed CSS) spanning a window
 #'     of `merge_gap` around the core SNP. Region boundaries are the first and
 #'     last significant SNP. Clusters closer than `merge_gap` are merged.}
 #'   \item{`method = "flank"`}{Randhawa et al. (2015). At least one SNP in the
-#'     top 0.1\%, flanked by at least `min_flank` adjoining SNPs in the top 1\%.
-#'     Boundaries are the first and last top-1\% SNP of the cluster. Clusters
+#'     top 0.1%, flanked by at least `min_flank` adjoining SNPs in the top 1%.
+#'     Boundaries are the first and last top-1% SNP of the cluster. Clusters
 #'     closer than `merge_gap` are merged.}
 #' }
 #' Both papers additionally extend regions by 0.5 Mb on each side *for gene

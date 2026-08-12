@@ -110,13 +110,19 @@ css_input <- function(data,
   data.table::setnames(dt, cols, new_names)
   if (is.null(snp)) dt[, snp := NA_character_]
 
+  # Coerce factors through their labels: as.numeric() on a factor returns the
+  # internal level codes, silently replacing every value.
+  as_num <- function(v) {
+    if (is.factor(v)) v <- as.character(v)
+    suppressWarnings(as.numeric(v))
+  }
   if (!is.numeric(dt$pos)) {
-    suppressWarnings(dt[, pos := as.numeric(pos)])
+    data.table::set(dt, j = "pos", value = as_num(dt$pos))
     if (all(is.na(dt$pos))) .stopf("`%s` could not be coerced to numeric positions.", pos)
   }
   for (tc in test_cols) {
     if (!is.numeric(dt[[tc]])) {
-      suppressWarnings(data.table::set(dt, j = tc, value = as.numeric(dt[[tc]])))
+      data.table::set(dt, j = tc, value = as_num(dt[[tc]]))
     }
   }
 

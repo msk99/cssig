@@ -16,28 +16,28 @@ css_region_plot(
 )
 }
 \arguments{
-\item{x}{A `css_result` that still carries its constituent test columns.}
+\item{x}{A \code{css_result} that still carries its constituent test columns.}
 
-\item{region}{Either a single row of a `css_regions` object, or a list/vector
-with `chr`, `start` and `end`.}
+\item{region}{Either a single row of a \code{css_regions} object, or a list/vector
+with \code{chr}, \code{start} and \code{end}.}
 
-\item{pad}{Extra base pairs shown on each side. Default `5e5`.}
+\item{pad}{Extra base pairs shown on each side. Default \code{5e5}.}
 
 \item{tests}{Optional character vector selecting which constituent tests to
 show. Defaults to all of them.}
 
 \item{smooth}{Draw the smoothed track for each test where available.
-Default `TRUE`.}
+Default \code{TRUE}.}
 
-\item{genes}{Optional `data.frame` with `start`, `end` and `name` columns,
-drawn as a gene track.}
+\item{genes}{Optional \code{data.frame} with \code{start}, \code{end} and \code{name} columns,
+drawn as a gene track in its own bottom panel, with \code{name} as the label.}
 
-\item{units}{Axis units: `"Mb"` (default), `"kb"` or `"bp"`.}
+\item{units}{Axis units: \code{"Mb"} (default), \code{"kb"} or \code{"bp"}.}
 
 \item{title}{Plot title.}
 }
 \value{
-A [ggplot2::ggplot] object, faceted by test with CSS on top.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object, faceted by test with CSS on top.
 }
 \description{
 Zooms into one region and shows each constituent selection test alongside

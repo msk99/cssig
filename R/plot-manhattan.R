@@ -49,6 +49,10 @@ css_manhattan <- function(x,
                           subtitle = NULL) {
   score <- if (missing(score) && !"css_smooth" %in% names(x)) "raw" else match.arg(score)
   score_col <- if (score == "smoothed") "css_smooth" else "css"
+  if (!"css" %in% names(x) && !is.null(attr(x, "css_reciprocal"))) {
+    .stopf(paste0("`x` is a reciprocal result with two directed scores, not one `css`.\n",
+                  "Plot it with css_manhattan_mirror()."))
+  }
   .require_col(x, c("chr", "pos", score_col), "css_manhattan")
 
   d <- data.table::data.table(
@@ -140,8 +144,10 @@ css_manhattan <- function(x,
 #' threshold for each.
 #'
 #' @param x A `css_result` from [css_reciprocal()].
-#' @param top Upper tail fraction used for the two threshold lines.
-#'   Default `0.001`.
+#' @param score Which scores to plot: `"smoothed"` (the default once
+#'   [css_smooth()] has been run on the reciprocal result) or `"raw"`.
+#' @param top Upper tail fraction used for the two threshold lines, applied to
+#'   each direction's own distribution of the plotted score. Default `0.001`.
 #' @param gap,point_size,point_alpha,title,subtitle As for [css_manhattan()].
 #'
 #' @return A [ggplot2::ggplot] object.
@@ -153,18 +159,24 @@ css_manhattan <- function(x,
 #' rd <- data.table::copy(css_sim_small)
 #' rd$xpehh <- -rd$xpehh; rd$ddaf <- -rd$ddaf
 #' rvs <- css_input(rd, tests = c(fst = "high", xpehh = "high", ddaf = "high"))
-#' css_manhattan_mirror(css_reciprocal(fwd, rvs, labels = c("large", "small")))
+#' recip <- css_reciprocal(fwd, rvs, labels = c("large", "small"))
+#' css_manhattan_mirror(recip)              # raw scores
+#' css_manhattan_mirror(css_smooth(recip))  # smoothed, as the 2015 figure plots
 #'
 #' @export
-css_manhattan_mirror <- function(x, top = 0.001, gap = 2e7,
+css_manhattan_mirror <- function(x, score = c("smoothed", "raw"),
+                                 top = 0.001, gap = 2e7,
                                  point_size = 0.7, point_alpha = 0.85,
                                  title = NULL, subtitle = NULL) {
-  .require_col(x, c("chr", "pos", "css_pos", "css_neg"), "css_manhattan_mirror")
+  score <- if (missing(score) && !"css_pos_smooth" %in% names(x)) "raw" else match.arg(score)
+  up_col   <- if (score == "smoothed") "css_pos_smooth" else "css_pos"
+  down_col <- if (score == "smoothed") "css_neg_smooth" else "css_neg"
+  .require_col(x, c("chr", "pos", up_col, down_col), "css_manhattan_mirror")
   labels <- attr(x, "css_reciprocal")$labels
   if (is.null(labels)) labels <- c("forward", "reverse")
 
   d <- data.table::data.table(chr = x$chr, pos = x$pos,
-                              up = x$css_pos, down = x$css_neg)
+                              up = x[[up_col]], down = x[[down_col]])
   d <- d[!is.na(up) & !is.na(down)]
   g <- css_genome_coords(d$chr, d$pos, gap = gap)
   d[, pos_cum := g$pos_cum]
@@ -197,8 +209,8 @@ css_manhattan_mirror <- function(x, top = 0.001, gap = 2e7,
                   y = expression(CSS ~ (-log[10] * italic(p))),
                   title = title,
                   subtitle = subtitle %||%
-                    sprintf("Each cohort as the selected population in turn; dashed lines at the top %s",
-                            .pct(top))) +
+                    sprintf("Each cohort as the selected population in turn; dashed lines at the top %s of each direction's %s scores",
+                            .pct(top), score)) +
     css_theme()
 }
 

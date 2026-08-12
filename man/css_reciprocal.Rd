@@ -7,17 +7,19 @@
 css_reciprocal(forward, reverse, labels = c("forward", "reverse"), ...)
 }
 \arguments{
-\item{forward, reverse}{`css_input` objects for the two directions.}
+\item{forward, reverse}{\code{css_input} objects for the two directions.}
 
 \item{labels}{Length-2 character vector naming the two cohorts, used by
-[css_manhattan_mirror()]. Default `c("forward", "reverse")`.}
+\code{\link[=css_manhattan_mirror]{css_manhattan_mirror()}}. Default \code{c("forward", "reverse")}.}
 
-\item{...}{Passed to [css()].}
+\item{...}{Passed to \code{\link[=css]{css()}}.}
 }
 \value{
-A `css_result` keyed on `(chr, pos)` with columns `css_pos` (forward
-  direction), `css_neg` (reverse) and `css_signed`, the signed score
-  `css_pos - css_neg` used for mirrored plotting.
+A \code{css_result} keyed on \verb{(chr, pos)} with columns \code{css_pos} (forward
+direction), \code{css_neg} (reverse) and \code{css_signed}, the signed score
+\code{css_pos - css_neg} used for mirrored plotting. \code{plot()} on the result
+draws \code{\link[=css_manhattan_mirror]{css_manhattan_mirror()}}, and \code{\link[=css_smooth]{css_smooth()}} smooths both directions
+(\code{css_pos_smooth}, \code{css_neg_smooth}, \code{css_signed_smooth}).
 }
 \description{
 Randhawa et al. (2015) compare two cohorts in both directions: each cohort in
@@ -26,9 +28,9 @@ are plotted mirrored about zero (their Figure 2), so that a signal's sign
 says which cohort carries the selection signature.
 }
 \details{
-The two inputs must describe the same SNPs. `forward` should hold the
+The two inputs must describe the same SNPs. \code{forward} should hold the
 statistics computed with cohort A as the selected population and B as
-reference; `reverse` the same tests with the roles swapped. For directional
+reference; \code{reverse} the same tests with the roles swapped. For directional
 tests such as XP-EHH and \eqn{\Delta}DAF this means recomputing them; for
 symmetric tests such as \eqn{F_{ST}} the same column is reused, which is
 correct — \eqn{F_{ST}} carries no direction, and it is the directional tests

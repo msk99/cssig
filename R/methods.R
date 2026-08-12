@@ -142,7 +142,10 @@ as.data.frame.css_result <- function(x, ...) {
 }
 
 #' @export
-plot.css_result <- function(x, ...) css_manhattan(x, ...)
+plot.css_result <- function(x, ...) {
+  if (!is.null(attr(x, "css_reciprocal"))) return(css_manhattan_mirror(x, ...))
+  css_manhattan(x, ...)
+}
 
 #' @export
 plot.css_regions <- function(x, y, ...) {

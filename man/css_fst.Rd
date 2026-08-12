@@ -10,16 +10,16 @@ css_fst(count1, n1, count2, n2, ploidy = 2L, floor_zero = FALSE)
 \item{count1, count2}{Integer vector of copies of the reference allele in
 cohort 1 and cohort 2.}
 
-\item{n1, n2}{Number of *individuals* genotyped in each cohort, per SNP
+\item{n1, n2}{Number of \emph{individuals} genotyped in each cohort, per SNP
 (scalars are recycled).}
 
-\item{ploidy}{Ploidy, default `2`.}
+\item{ploidy}{Ploidy, default \code{2}.}
 
-\item{floor_zero}{Truncate negative estimates at zero. Default `FALSE`.}
+\item{floor_zero}{Truncate negative estimates at zero. Default \code{FALSE}.}
 }
 \value{
-Numeric vector of \eqn{F_{ST}} estimates, `NA` where a SNP is
-  monomorphic across both cohorts.
+Numeric vector of \eqn{F_{ST}} estimates, \code{NA} where a SNP is
+monomorphic across both cohorts.
 }
 \description{
 Per-SNP \eqn{\theta} of Weir & Cockerham (1984) for two populations, the
@@ -33,7 +33,7 @@ the number of genotyped individuals in each cohort.
 
 Negative values are a normal outcome of the estimator when true
 differentiation is near zero. They are returned as-is by default; set
-`floor_zero = TRUE` to truncate at zero. Truncation biases the genome-wide
+\code{floor_zero = TRUE} to truncate at zero. Truncation biases the genome-wide
 distribution upward, but because CSS is rank-based and truncation is monotone
 it has no effect on CSS itself.
 }
@@ -44,5 +44,5 @@ css_fst(count1 = c(10, 40, 25), n1 = 25,
 }
 \references{
 Weir BS, Cockerham CC (1984). Estimating F-statistics for the
-  analysis of population structure. *Evolution* 38:1358-1370.
+analysis of population structure. \emph{Evolution} 38:1358-1370.
 }

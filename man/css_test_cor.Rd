@@ -12,17 +12,17 @@ css_test_cor(
 )
 }
 \arguments{
-\item{x}{A `css_result` still carrying its constituent test columns.}
+\item{x}{A \code{css_result} still carrying its constituent test columns.}
 
-\item{method}{Correlation method passed to [stats::cor()]. Default
-`"spearman"`, which is the appropriate choice here because CSS is itself a
+\item{method}{Correlation method passed to \code{\link[stats:cor]{stats::cor()}}. Default
+\code{"spearman"}, which is the appropriate choice here because CSS is itself a
 rank statistic.}
 
 \item{title, subtitle}{Plot labels.}
 }
 \value{
-A [ggplot2::ggplot] object. The underlying correlation matrix is
-  attached as the `"cor"` attribute.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object. The underlying correlation matrix is
+attached as the \code{"cor"} attribute.
 }
 \description{
 Randhawa et al. (2014) report low to moderate correlation between pairs of

@@ -5,13 +5,13 @@
 \alias{css_sim_small}
 \title{Two-chromosome subset of the simulated panel}
 \format{
-As [css_sim], restricted to two chromosomes.
+As \link{css_sim}, restricted to two chromosomes.
 }
 \usage{
 css_sim_small
 }
 \description{
-Chromosomes 1 and 2 of [css_sim], carrying the incomplete and complete hard
+Chromosomes 1 and 2 of \link{css_sim}, carrying the incomplete and complete hard
 sweeps respectively. Sized so that examples and tests run quickly.
 }
 \examples{

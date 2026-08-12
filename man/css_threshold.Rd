@@ -13,21 +13,21 @@ css_threshold(
 )
 }
 \arguments{
-\item{x}{A `css_result`, normally after [css_smooth()].}
+\item{x}{A \code{css_result}, normally after \code{\link[=css_smooth]{css_smooth()}}.}
 
-\item{top}{Upper tail fraction to declare significant. Default `0.001`
+\item{top}{Upper tail fraction to declare significant. Default \code{0.001}
 (top 0.1\%), as used in both papers.}
 
-\item{top2}{A second, more permissive fraction used by the `"flank"` region
-caller of [css_regions()]. Default `0.01` (top 1\%).}
+\item{top2}{A second, more permissive fraction used by the \code{"flank"} region
+caller of \code{\link[=css_regions]{css_regions()}}. Default \code{0.01} (top 1\%).}
 
-\item{on}{Which score to threshold: `"smoothed"` (default) or `"raw"`.}
+\item{on}{Which score to threshold: \code{"smoothed"} (default) or \code{"raw"}.}
 
-\item{.copy}{If `TRUE`, work on a copy and leave `x` untouched.}
+\item{.copy}{If \code{TRUE}, work on a copy and leave \code{x} untouched.}
 }
 \value{
-`x` with logical columns `significant` and `significant2` added. The
-  numeric cut-offs are stored in the `css_threshold` attribute.
+\code{x} with logical columns \code{significant} and \code{significant2} added. The
+numeric cut-offs are stored in the \code{css_threshold} attribute.
 }
 \description{
 Both source papers declare SNPs significant when their score falls in the top

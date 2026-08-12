@@ -7,7 +7,8 @@ NULL
 # with these, so that pipeline stages can never silently overwrite user data.
 .css_reserved <- c(
   "zbar", "p", "css", "css_smooth", "n_window", "significant", "significant2",
-  "qval", "p_adj", "pos_cum", "css_pos", "css_neg", "css_signed"
+  "qval", "p_adj", "pos_cum", "css_pos", "css_neg", "css_signed",
+  "css_pos_smooth", "css_neg_smooth", "css_signed_smooth"
 )
 
 .stopf <- function(...) stop(sprintf(...), call. = FALSE)
@@ -46,6 +47,8 @@ NULL
         css        = "`css()`",
         css_smooth = "`css_smooth()`",
         significant = "`css_threshold()`",
+        css_pos    = "`css_reciprocal()`",
+        css_pos_smooth = "`css_smooth()`",
         "the preceding pipeline stage"
       )
     )

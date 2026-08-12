@@ -12,7 +12,7 @@ css_theme(base_size = 11, base_family = "")
 \item{base_family}{Base font family.}
 }
 \value{
-A [ggplot2::theme] object.
+A \link[ggplot2:theme]{ggplot2::theme} object.
 }
 \description{
 A minimal theme for CSS plots

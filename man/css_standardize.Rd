@@ -10,7 +10,7 @@ css_standardize(x, na.rm = TRUE)
 \item{x}{Numeric vector.}
 
 \item{na.rm}{Ignore missing values when computing the mean and standard
-deviation. Default `TRUE`.}
+deviation. Default \code{TRUE}.}
 }
 \value{
 Numeric vector of z-scores.

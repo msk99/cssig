@@ -7,16 +7,16 @@
 css_fdr_density(x, regions, fdr = 0.05, title = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A `css_result` that has been through [css_fdr()].}
+\item{x}{A \code{css_result} that has been through \code{\link[=css_fdr]{css_fdr()}}.}
 
-\item{regions}{A `css_regions` object.}
+\item{regions}{A \code{css_regions} object.}
 
-\item{fdr}{FDR level to mark with a vertical line. Default `0.05`.}
+\item{fdr}{FDR level to mark with a vertical line. Default \code{0.05}.}
 
 \item{title, subtitle}{Plot labels.}
 }
 \value{
-A [ggplot2::ggplot] object.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
 }
 \description{
 Reproduces Figure 2 of Randhawa et al. (2014). A clear separation between the

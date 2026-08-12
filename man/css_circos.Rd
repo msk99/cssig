@@ -15,23 +15,23 @@ css_circos(
 )
 }
 \arguments{
-\item{x}{A `css_result`, normally after [css_smooth()].}
+\item{x}{A \code{css_result}, normally after \code{\link[=css_smooth]{css_smooth()}}.}
 
-\item{regions}{Optional `css_regions` object; highlighted on the CSS track.}
+\item{regions}{Optional \code{css_regions} object; highlighted on the CSS track.}
 
 \item{tests}{Constituent tests to draw as inner tracks. Defaults to all.}
 
-\item{smoothed}{Use the smoothed columns where available. Default `TRUE`.}
+\item{smoothed}{Use the smoothed columns where available. Default \code{TRUE}.}
 
 \item{track_height}{Height of each track as a fraction of the radius.}
 
-\item{labels}{Optional `data.frame` with `chr`, `pos` and `name` for outer
+\item{labels}{Optional \code{data.frame} with \code{chr}, \code{pos} and \code{name} for outer
 text labels, for example candidate genes.}
 
 \item{title}{Optional title drawn in the centre.}
 }
 \value{
-Invisibly `NULL`, called for its side effect of drawing a plot.
+Invisibly \code{NULL}, called for its side effect of drawing a plot.
 }
 \description{
 Reproduces the layout of Figure 4 of Randhawa et al. (2014): concentric
